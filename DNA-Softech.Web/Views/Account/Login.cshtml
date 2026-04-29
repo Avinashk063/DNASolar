@@ -1,0 +1,163 @@
+@{
+    ViewData["Title"] = "Login to DNA SOFTECH";
+}
+
+@section Styles {
+    <style>
+        .login-wrap {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 48px 40px;
+            animation: fadeUp 0.6s ease-out;
+            /* Extra specific shadows for login to make it pop */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .login-header img {
+            width: 64px;
+            margin: 0 auto 16px;
+        }
+
+        .login-header h2 {
+            font-size: 1.75rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .auth-error {
+            background: #fef2f2;
+            color: #ef4444;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid #fca5a5;
+            display: none;
+        }
+
+        .login-footer {
+            margin-top: 32px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .login-footer a {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .login-footer a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+    </style>
+}
+
+<div class="login-wrap">
+    <div class="premium-card login-card">
+        <div class="login-header">
+            <img src="~/img/BrandLogo.png" alt="DNA Softech" />
+            <h2>Welcome Back</h2>
+            <p>Login to access your orders and account.</p>
+        </div>
+
+        <form id="loginForm">
+            <div id="loginError" class="auth-error"></div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" class="input-premium" placeholder="name@example.com" required />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="input-premium" placeholder="••••••••" required />
+            </div>
+
+            <button type="submit" class="btn-premium" id="loginBtn" style="width: 100%; margin-top: 10px;">
+                Sign In
+            </button>
+        </form>
+
+        <div class="login-footer">
+            Don't have an account? <a href="/Account/Register">Create Account</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('loginError');
+            
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+            err.style.display = 'none';
+
+            try {
+                // We call the API login which sets the cookie
+                const res = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+
+                if (res.ok) {
+                    const user = await res.json();
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    // Redirect to home or return URL
+                    window.location.href = '@ViewData["ReturnUrl"]' || '/';
+                } else {
+                    const msg = await res.text();
+                    err.textContent = msg || 'Invalid email or password';
+                    err.style.display = 'block';
+                }
+            } catch (e) {
+                err.textContent = 'Server error. Please try again.';
+                err.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+            }
+        });
+    </script>
+}

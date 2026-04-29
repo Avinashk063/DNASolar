@@ -1,0 +1,240 @@
+@{
+    ViewData["Title"] = "Complete Payment - DNA SOFTECH";
+}
+
+@section Styles {
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --primary-hover: #059669;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --border-focus: #93c5fd;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            --transition: all 0.2s ease-in-out;
+        }
+
+        .wrap {
+            max-width: 540px;
+            margin: 60px auto;
+            padding: 0 24px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--card-shadow);
+        }
+
+        #paymentMeta {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .summary-row:last-child { border-bottom: none; }
+
+        .qr-wrapper {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        #upiQr { width: 200px; height: 200px; }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+        }
+    </style>
+}
+
+<div class="wrap">
+    <a href="/Checkout" class="back-link" style="color:var(--text-muted); text-decoration:none; margin-bottom:20px; display:inline-block;">
+        <i class="fas fa-arrow-left"></i> Return to Checkout
+    </a>
+
+    <div class="card">
+        <h2 style="text-align:center;">Complete Payment</h2>
+
+        <div id="paymentMeta">
+            <!-- Rendered by JS -->
+        </div>
+
+        <div id="upiBlock" style="display:none; text-align:center;">
+            <p style="margin: 0 0 16px; color: var(--text-muted); font-size: 14px;">Scan QR Code using any UPI App</p>
+            <div class="qr-wrapper">
+                <img id="upiQr" alt="UPI QR" />
+            </div>
+            <div>
+                <div class="upi-id-display" style="background:#f1f5f9; padding:8px; border-radius:8px; display:inline-block; margin-bottom:15px;">
+                    <span style="color: var(--text-muted);">UPI ID:</span>
+                    <strong id="upiId">9654692672@yespop</strong>
+                </div>
+            </div>
+            <input id="upiRef" class="form-input" placeholder="Enter Transaction Reference (optional)" style="width:100%; padding:10px; margin-bottom:20px; border-radius:8px; border:1px solid #ddd;" />
+        </div>
+
+        <div id="codBlock" style="display:none; text-align:center; padding:20px; background:#f8fafc; border-radius:12px; margin-bottom:20px;">
+            <i class="fas fa-box-open" style="font-size: 32px; color: var(--primary-color);"></i>
+            <h3 style="margin-top:10px;">Cash on Delivery</h3>
+            <p>No online payment is required at this time.</p>
+        </div>
+
+        <button id="payBtn" class="btn-primary">
+            <i class="fas fa-check-circle"></i> <span>Confirm & Place Order</span>
+        </button>
+        <div id="result" style="margin-top:20px;"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script>
+        const UPI_ID = '9654692672@yespop';
+
+        function money(v) {
+            return '₹' + Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        }
+
+        async function initPayment() {
+            const payload = JSON.parse(sessionStorage.getItem('pending-order-payload') || '{}');
+            const meta = document.getElementById('paymentMeta');
+            const payBtn = document.getElementById('payBtn');
+            const result = document.getElementById('result');
+
+            if (!payload.total) {
+                result.innerHTML = '<p style="color:red;">No order data found.</p>';
+                payBtn.disabled = true;
+                return;
+            }
+
+            meta.innerHTML = `
+                <div class="summary-row"><span>Payment Method</span><strong>${payload.payment.toUpperCase()}</strong></div>
+                <div class="summary-row"><span>Customer Name</span><strong>${payload.name}</strong></div>
+                <div class="summary-row" style="border:none; font-weight:bold; font-size:1.1rem; color:var(--primary-color);">
+                    <span>Amount to Pay</span><strong>${money(payload.total)}</strong>
+                </div>
+            `;
+
+            if (payload.payment === 'upi') {
+                document.getElementById('upiBlock').style.display = 'block';
+                payBtn.innerHTML = 'I Have Paid, Place Order';
+                
+                const uri = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('DNA Softech')}&cu=INR&am=${Number(payload.total).toFixed(2)}`;
+                QRCode.toDataURL(uri, { width: 300, margin: 1 }, (err, url) => {
+                    document.getElementById('upiQr').src = url;
+                });
+            } else {
+                document.getElementById('codBlock').style.display = 'block';
+                payBtn.innerHTML = 'Place Order';
+            }
+
+            payBtn.addEventListener('click', async () => {
+                payBtn.disabled = true;
+                payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                
+                try {
+                    const orderPayload = {
+                        customer: {
+                            name: payload.name,
+                            email: payload.email,
+                            phone: payload.phone,
+                            address: payload.address,
+                            city: payload.city,
+                            postal: payload.postal
+                        },
+                        items: payload.items.map(i => ({ productId: parseInt(i.productId), quantity: i.quantity })),
+                        payment: {
+                            method: payload.payment,
+                            details: payload.payment === 'payu' ? 'PayU' : 'COD'
+                        },
+                        total: payload.total
+                    };
+
+                    const res = await fetch('/api/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderPayload)
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        localStorage.removeItem('cart');
+                        sessionStorage.removeItem('pending-order-payload');
+                        
+                        if (data.requiresAction && data.paymentUrl) {
+                            result.innerHTML = '<p style="color:var(--primary);font-weight:600;"><i class="fas fa-lock"></i> Redirecting to Secure Gateway...</p>';
+                            
+                            // Dynamically build form to post to PayU
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = data.paymentUrl;
+                            
+                            for (const key in data.paymentData) {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = key;
+                                input.value = data.paymentData[key];
+                                form.appendChild(input);
+                            }
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                        } else {
+                            window.location.href = `/Checkout/Success?orderId=${data.id}`;
+                        }
+                    } else {
+                        throw new Error(await res.text());
+                    }
+                } catch (e) {
+                    result.innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+                    payBtn.disabled = false;
+                    payBtn.innerHTML = '<i class="fas fa-redo"></i> Retry Payment';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initPayment);
+    </script>
+}

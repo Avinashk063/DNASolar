@@ -1,0 +1,1039 @@
+﻿@{
+    ViewData["Title"] = "Checkout — DNA Softech";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout — DNA Softech</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink:      #0f172a;
+            --ink-2:    #334155;
+            --ink-3:    #64748b;
+            --border:   #e2e8f0;
+            --bg:       #f1f4f9;
+            --surface:  #ffffff;
+            --accent:   #4f46e5;
+            --accent-d: #3730a3;
+            --green:    #10b981;
+            --purple:   #7c3aed;
+            --radius:   14px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        /* ── NAV ── */
+        .nav {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 62px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 1px 0 rgba(15,23,42,.05);
+        }
+        .nav-logo { display: flex; align-items: center; gap: .65rem; text-decoration: none; }
+        .nav-logo img { height: 34px; width: 34px; object-fit: contain; border-radius: 8px; }
+        .nav-logo span {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-secure { font-size: .78rem; color: var(--ink-3); display: flex; align-items: center; gap: .35rem; font-weight: 500; }
+        .nav-secure i { color: var(--green); }
+        .nav-back {
+            font-size: .82rem;
+            color: var(--ink-3);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            transition: color .15s;
+            font-weight: 600;
+            padding: .4rem .9rem;
+            border: 1.5px solid var(--border);
+            border-radius: 9999px;
+            background: transparent;
+            transition: all .15s ease;
+        }
+        .nav-back:hover { color: var(--accent); border-color: #c7d2fe; background: rgba(79,70,229,.04); }
+
+        /* ── STEP INDICATOR ── */
+        .steps-wrap {
+            max-width: 520px;
+            margin: 2rem auto 0;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex: 1;
+        }
+        .step-num {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .75rem; font-weight: 700;
+            flex-shrink: 0;
+            transition: background .25s, color .25s;
+        }
+        .step.active .step-num   { background: #4f46e5; color: #fff; }
+        .step.done   .step-num   { background: var(--green); color: #fff; }
+        .step.inactive .step-num { background: var(--border); color: var(--ink-3); }
+        .step-label { font-size: .78rem; font-weight: 700; color: var(--ink-3); transition: color .25s; white-space: nowrap; }
+        .step.active .step-label { color: var(--ink); }
+        .step.done   .step-label { color: var(--green); }
+        .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 .75rem; }
+
+        /* ── LAYOUT ── */
+        .page-wrap {
+            max-width: 1060px;
+            margin: 1.5rem auto 4rem;
+            padding: 0 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* ── PANEL (shared card style) ── */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .panel-head {
+            padding: 1.15rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: .65rem;
+        }
+        .panel-head-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .85rem;
+            flex-shrink: 0;
+        }
+        .panel-head-icon.orange { background: #fff7ed; color: var(--accent); }
+        .panel-head-icon.green  { background: #f0fdf4; color: var(--green); }
+        .panel-head-icon.purple { background: #f5f3ff; color: var(--purple); }
+        .panel-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; color: var(--ink); }
+        .panel-subtitle { font-size: .77rem; color: var(--ink-3); margin-top: .1rem; }
+        .panel-body { padding: 1.5rem; }
+
+        /* ── ORDER ITEMS (Step 1 left panel) ── */
+        .order-item {
+            display: flex;
+            gap: 1rem;
+            padding: .9rem 0;
+            border-bottom: 1px solid #f4f4f5;
+        }
+        .order-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .order-item-img {
+            width: 60px; height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #f4f4f5;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .order-item-info { flex: 1; min-width: 0; }
+        .order-item-name {
+            font-size: .88rem; font-weight: 600; color: var(--ink);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-bottom: .2rem;
+        }
+        .order-item-cat { font-size: .75rem; color: var(--ink-3); margin-bottom: .4rem; }
+        .order-item-qty-row { display: flex; align-items: center; gap: .5rem; }
+        .qty-badge {
+            display: inline-flex; align-items: center;
+            background: #f4f4f5; border-radius: 6px;
+            padding: .15rem .5rem; font-size: .75rem; font-weight: 600; color: var(--ink-2);
+        }
+        .order-item-price { font-weight: 700; color: var(--ink); font-size: .92rem; white-space: nowrap; align-self: center; }
+
+        /* ── DELIVERY FORM (Step 1 right delivery area, shown below items) ── */
+        .section-label {
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 1rem;
+        }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+        .form-grid .full { grid-column: 1 / -1; }
+        .field { display: flex; flex-direction: column; gap: .3rem; }
+        .field label { font-size: .78rem; font-weight: 600; color: var(--ink-2); }
+        .field input {
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            padding: .6rem .85rem;
+            font-size: .88rem;
+            font-family: inherit;
+            color: var(--ink);
+            background: var(--bg);
+            outline: none;
+            transition: border-color .18s, box-shadow .18s;
+        }
+        .field input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(249,115,22,.1);
+            background: #fff;
+        }
+        .field input::placeholder { color: #a1a1aa; }
+
+        /* ── PROCEED BUTTON ── */
+        .proceed-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+            background: #fafafa;
+        }
+        .proceed-hint { font-size: .78rem; color: var(--ink-3); }
+        .btn-proceed {
+            display: inline-flex; align-items: center; gap: .55rem;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: .7rem 1.5rem;
+            font-size: .9rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all .18s ease;
+            box-shadow: 0 4px 14px rgba(79,70,229,.35);
+        }
+        .btn-proceed:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,.50); }
+        .btn-proceed:active { transform: none; }
+
+        /* ── PAYMENT STEP ── */
+        .pay-back-btn {
+            display: inline-flex; align-items: center; gap: .4rem;
+            font-size: .82rem; color: var(--ink-3);
+            background: none; border: none; cursor: pointer;
+            padding: .3rem 0; margin-bottom: 1rem;
+            font-family: inherit;
+            transition: color .15s;
+        }
+        .pay-back-btn:hover { color: var(--accent); }
+
+        .pay-method {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 1.1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: .7rem;
+            transition: border-color .18s, background .18s;
+        }
+        .pay-method:last-child { margin-bottom: 0; }
+        .pay-method.selected { border-color: #4f46e5; background: rgba(79,70,229,.04); }
+        .pay-method input[type=radio] { accent-color: #4f46e5; width: 17px; height: 17px; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+        .pay-method-body { flex: 1; }
+        .pay-method-title { font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: .15rem; }
+        .pay-method-desc  { font-size: .77rem; color: var(--ink-3); line-height: 1.45; }
+        .pay-method-badge {
+            font-size: .65rem; font-weight: 700; letter-spacing: .04em;
+            padding: .18rem .45rem; border-radius: 5px;
+            margin-left: .5rem; vertical-align: middle;
+        }
+        .badge-cod   { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; }
+        .badge-payu  { background: #fff7ed; color: var(--accent-d); border: 1px solid #fed7aa; }
+
+        /* UPI section */
+        .upi-panel {
+            margin-top: .75rem;
+            padding: 1rem;
+            background: #f5f3ff;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+        }
+        .upi-panel img { width: 140px; height: 140px; border-radius: 8px; border: 1px solid #e4e4e7; display: block; margin: .6rem auto; }
+        .upi-id-text { font-size: .82rem; font-weight: 700; color: var(--ink); margin: .35rem 0 .7rem; }
+
+        .payu-panel {
+            margin-top: .75rem;
+            padding: .85rem 1rem;
+            background: #fff7ed;
+            border-radius: 10px;
+            display: none;
+            font-size: .8rem;
+            color: #7c2d12;
+            line-height: 1.5;
+        }
+        .payu-panel i { margin-right: .35rem; }
+
+        /* ── PLACE ORDER BUTTON ── */
+        .btn-place {
+            width: 100%;
+            padding: .85rem;
+            font-size: .95rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            border: none;
+            border-radius: 11px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: .6rem;
+            transition: opacity .2s, transform .12s;
+            margin-top: 1.25rem;
+        }
+        .btn-place:hover { opacity: .9; transform: translateY(-1px); }
+        .btn-place:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+        .btn-place.cod-style  { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; }
+        .btn-place.upi-style  { background: linear-gradient(135deg, var(--purple), #4f46e5); color: #fff; }
+        .btn-place.payu-style { background: linear-gradient(135deg, #4f46e5, var(--purple)); color: #fff; }
+        .spin { animation: spin 1s linear infinite; }
+        @@keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── SIDEBAR ── */
+        .sidebar-inner { position: sticky; top: 76px; }
+        .sidebar-total {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .tot-row { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; color: var(--ink-3); padding: .3rem 0; }
+        .tot-row.grand { font-size: 1rem; font-weight: 800; color: var(--ink); padding-top: .65rem; border-top: 1.5px dashed var(--border); margin-top: .35rem; }
+        .tot-row.grand span:last-child { color: var(--accent); }
+        .free-badge { font-size: .7rem; background: #f0fdf4; color: var(--green); font-weight: 700; padding: .1rem .4rem; border-radius: 4px; }
+
+        /* ── ALERT ── */
+        .co-alert { border-radius: 9px; padding: .8rem 1rem; margin-bottom: 1rem; font-size: .84rem; display: none; }
+        .co-alert.success { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; }
+        .co-alert.error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        /* ── EMPTY CART ── */
+        .empty-wrap { max-width: 400px; margin: 5rem auto; text-align: center; padding: 0 1.5rem; }
+        .empty-wrap i { font-size: 2.5rem; color: #d4d4d8; display: block; margin-bottom: 1rem; }
+        .empty-wrap p { color: var(--ink-3); font-size: .9rem; margin-bottom: 1.5rem; }
+        .empty-wrap a { display: inline-block; background: var(--ink); color: #fff; padding: .65rem 1.5rem; border-radius: 9px; text-decoration: none; font-weight: 700; font-size: .88rem; }
+
+        /* ── TRUST LINE ── */
+        .trust-line {
+            display: flex; align-items: center; justify-content: center; gap: 1.25rem;
+            margin-top: .85rem; flex-wrap: wrap;
+        }
+        .trust-item { display: flex; align-items: center; gap: .35rem; font-size: .72rem; color: var(--ink-3); }
+        .trust-item i { color: var(--green); font-size: .75rem; }
+
+        /* ── STEPS visibility ── */
+        #stepReview  { display: block; }
+        #stepPayment { display: none; }
+
+        /* ── USE SAVED ADDRESS CHECKBOX ── */
+        .saved-addr-row {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            padding: .75rem 1rem;
+            background: #f5f3ff;
+            border: 1.5px solid #c4b5fd;
+            border-radius: 10px;
+            margin-bottom: 1.15rem;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .saved-addr-row:hover { background: #ede9fe; }
+        .saved-addr-row input[type=checkbox] {
+            width: 17px; height: 17px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .saved-addr-row .sa-label {
+            font-size: .86rem;
+            font-weight: 700;
+            color: #4c1d95;
+            user-select: none;
+        }
+        .saved-addr-row .sa-sub {
+            font-size: .75rem;
+            color: #7c3aed;
+            margin-top: .08rem;
+        }
+        .field input[readonly] {
+            background: #f5f3ff;
+            border-color: #c4b5fd;
+            color: var(--ink-2);
+            cursor: default;
+        }
+
+        /* ── RESPONSIVE ── */
+        @@media (max-width: 820px) {
+            .page-wrap { grid-template-columns: 1fr; }
+            .sidebar { order: -1; }
+        }
+
+        @@media (max-width: 600px) {
+            .nav { padding: 0 1rem; flex-wrap: wrap; height: auto; min-height: 56px; gap: .4rem; padding-top: .5rem; padding-bottom: .5rem; }
+            .nav-logo span { font-size: .95rem; }
+            .nav-secure { display: none; }
+
+            .steps-wrap { margin-top: 1.25rem; }
+
+            .page-wrap { margin-top: 1rem; padding: 0 .9rem; }
+            .panel-body { padding: 1rem; }
+            .panel-head { padding: .9rem 1rem; }
+
+            .proceed-row { flex-direction: column; align-items: stretch; gap: .7rem; padding: 1rem; }
+            .btn-proceed { justify-content: center; }
+            .proceed-hint { text-align: center; }
+
+            .sidebar-inner { position: static; }
+
+            /* Prevent iOS input zoom */
+            .field input, .field select, .field textarea { font-size: 16px; }
+        }
+
+        @@media (max-width: 480px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid .full { grid-column: 1; }
+
+            .nav-back { font-size: .76rem; padding: .35rem .7rem; }
+            .nav-logo span { font-size: .9rem; }
+
+            .steps-wrap { padding: 0 1rem; }
+            .step-label { font-size: .72rem; }
+
+            .trust-line { gap: .75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <a href="/" class="nav-logo">
+        <img src="~/img/BrandLogo.png" alt="DNA Softech" />
+        <span>DNA Softech</span>
+    </a>
+    <span class="nav-secure"><i class="fas fa-lock"></i> Secure Checkout</span>
+    <a href="/Shop" class="nav-back"><i class="fas fa-arrow-left"></i> Back to Shop</a>
+</nav>
+
+<!-- STEP INDICATOR -->
+<div class="steps-wrap" id="stepsWrap">
+    <div class="step active" id="s1">
+        <span class="step-num" id="s1num">1</span>
+        <span class="step-label">Review Order</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step inactive" id="s2">
+        <span class="step-num" id="s2num">2</span>
+        <span class="step-label">Payment</span>
+    </div>
+</div>
+
+<!-- EMPTY CART -->
+<div class="empty-wrap" id="emptyWrap" style="display:none;">
+    <i class="fas fa-shopping-cart"></i>
+    <p>Your cart is empty. Add some products before checking out.</p>
+    <a href="/Shop">Browse Products</a>
+</div>
+
+<!-- MAIN PAGE -->
+<div class="page-wrap" id="pageWrap" style="display:none;">
+
+    <!-- ── LEFT: STEP CONTENT ── -->
+    <div class="co-main">
+
+        <!-- STEP 1: REVIEW ORDER & DELIVERY -->
+        <div id="stepReview">
+
+            <!-- Order items panel -->
+            <div class="panel" style="margin-bottom:1.25rem;">
+                <div class="panel-head">
+                    <span class="panel-head-icon orange"><i class="fas fa-bag-shopping"></i></span>
+                    <div>
+                        <div class="panel-title">Your Order</div>
+                        <div class="panel-subtitle" id="itemCountLabel">Loading…</div>
+                    </div>
+                </div>
+                <div class="panel-body" id="reviewItems" style="padding-top:.75rem; padding-bottom:.75rem;"></div>
+            </div>
+
+            <!-- Delivery details panel -->
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-head-icon green"><i class="fas fa-map-marker-alt"></i></span>
+                    <div>
+                        <div class="panel-title">Delivery Details</div>
+                        <div class="panel-subtitle">Where should we send this?</div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div id="coAlert" class="co-alert"></div>
+                    <label class="saved-addr-row" id="savedAddrRow">
+                        <input type="checkbox" id="useSavedAddress" />
+                        <div>
+                            <div class="sa-label"><i class="fas fa-address-card" style="margin-right:.4rem;"></i>Use my saved address</div>
+                            <div class="sa-sub">Auto-fill delivery details from your profile</div>
+                        </div>
+                    </label>
+                    <form id="checkoutForm" novalidate>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="coFirstname">First Name *</label>
+                                <input id="coFirstname" type="text" name="firstname" placeholder="Avinash" required />
+                            </div>
+                            <div class="field">
+                                <label for="coLastname">Last Name</label>
+                                <input id="coLastname" type="text" name="lastname" placeholder="Kumar" />
+                            </div>
+                            <div class="field">
+                                <label for="coEmail">Email Address *</label>
+                                <input id="coEmail" type="email" name="email" placeholder="you@example.com" required />
+                            </div>
+                            <div class="field">
+                                <label for="coPhone">Phone Number *</label>
+                                <input id="coPhone" type="tel" name="phone" placeholder="+91 98765 43210" required />
+                            </div>
+                            <div class="field full">
+                                <label for="coAddress">Street Address *</label>
+                                <input id="coAddress" type="text" name="address" placeholder="Building, Street, Area" required />
+                            </div>
+                            <div class="field">
+                                <label for="coCity">City *</label>
+                                <input id="coCity" type="text" name="city" placeholder="Mumbai" required />
+                            </div>
+                            <div class="field">
+                                <label for="coPostal">PIN Code *</label>
+                                <input id="coPostal" type="text" name="postal" placeholder="400001" required />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="proceed-row">
+                    <span class="proceed-hint">Looks good? Let's pick how you'd like to pay.</span>
+                    <button class="btn-proceed" id="proceedBtn" type="button">
+                        Continue to Payment <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: PAYMENT -->
+        <div id="stepPayment">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-head-icon purple"><i class="fas fa-shield-halved"></i></span>
+                    <div>
+                        <div class="panel-title">How would you like to pay?</div>
+                        <div class="panel-subtitle">All payments are processed securely</div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <button class="pay-back-btn" id="backToReviewBtn" type="button">
+                        <i class="fas fa-arrow-left"></i> Edit order details
+                    </button>
+
+                    <div id="payAlert" class="co-alert"></div>
+
+                    <!-- COD -->
+                    <label class="pay-method selected" data-pay="cod">
+                        <input type="radio" name="payMethod" value="cod" checked />
+                        <div class="pay-method-body">
+                            <div class="pay-method-title">
+                                Cash on Delivery
+                                <span class="pay-method-badge badge-cod">Most Popular</span>
+                            </div>
+                            <div class="pay-method-desc">Pay when your order is delivered to your door. No upfront payment needed.</div>
+                        </div>
+                        <i class="fas fa-money-bill-wave" style="color:#16a34a; font-size:1.15rem; align-self:center; margin-left:.25rem;"></i>
+                    </label>
+
+                    <!-- UPI -->
+                    <label class="pay-method" data-pay="upi">
+                        <input type="radio" name="payMethod" value="upi" />
+                        <div class="pay-method-body">
+                            <div class="pay-method-title">UPI / QR Pay</div>
+                            <div class="pay-method-desc">Scan the QR with any UPI app — GPay, PhonePe, Paytm, BHIM and more.</div>
+                            <!-- UPI detail (inline) -->
+                            <div class="upi-panel" id="upiPanel">
+                                <p style="font-size:.78rem; color:#5b21b6; font-weight:500;">Scan to pay now</p>
+                                <img id="upiQrImg" src="" alt="UPI QR Code" />
+                                <div class="upi-id-text" id="upiIdText">dna&#64;upi</div>
+                                <div class="field" style="text-align:left; margin-top:.5rem;">
+                                    <label for="upiRef" style="font-size:.76rem; color:#4c1d95;">Enter UPI Transaction ID after payment *</label>
+                                    <input type="text" id="upiRef" placeholder="e.g. 412345678901"
+                                           style="border-color:#c4b5fd; background:#fff;" />
+                                </div>
+                            </div>
+                        </div>
+                        <i class="fas fa-mobile-screen-button" style="color:#7c3aed; font-size:1.15rem; align-self:center; margin-left:.25rem;"></i>
+                    </label>
+
+                    <!-- PayU -->
+                    <label class="pay-method" data-pay="payu">
+                        <input type="radio" name="payMethod" value="payu" />
+                        <div class="pay-method-body">
+                            <div class="pay-method-title">
+                                Pay Online — via PayU
+                                <span class="pay-method-badge badge-payu">Secure</span>
+                            </div>
+                            <div class="pay-method-desc">Net banking, wallets &amp; more. You'll be taken to PayU's page to finish payment.</div>
+                            <div class="payu-panel" id="payuPanel">
+                                <i class="fas fa-circle-info"></i>
+                                You'll be redirected to PayU after clicking the button below. Your order is saved — we'll update it once payment is confirmed.
+                            </div>
+                        </div>
+                        <i class="fas fa-globe" style="color:#ea580c; font-size:1.15rem; align-self:center; margin-left:.25rem;"></i>
+                    </label>
+
+                    <button id="placeOrderBtn" class="btn-place cod-style" type="button">
+                        <i class="fas fa-check-circle"></i> Place Order
+                    </button>
+
+                    <div class="trust-line">
+                        <span class="trust-item"><i class="fas fa-lock"></i> 256-bit SSL</span>
+                        <span class="trust-item"><i class="fas fa-rotate-left"></i> Easy returns</span>
+                        <span class="trust-item"><i class="fas fa-headset"></i> 24/7 support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── RIGHT: ORDER SUMMARY SIDEBAR ── -->
+    <div class="sidebar">
+        <div class="sidebar-inner">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-head-icon orange"><i class="fas fa-receipt"></i></span>
+                    <div>
+                        <div class="panel-title">Order Summary</div>
+                    </div>
+                </div>
+                <div class="panel-body" id="sidebarItems" style="padding-top:.75rem; padding-bottom:.75rem;"></div>
+                <div class="sidebar-total">
+                    <div class="tot-row"><span>Subtotal</span><span id="totSubtotal">—</span></div>
+                    <div class="tot-row"><span>GST (10%)</span><span id="totGst">—</span></div>
+                    <div class="tot-row"><span>Shipping</span><span><span class="free-badge">FREE</span></span></div>
+                    <div class="tot-row grand"><span>Total</span><span id="totGrand">—</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden PayU form -->
+<form id="payuForm" method="POST" style="display:none;">
+    <input type="hidden" name="key"              id="pf_key" />
+    <input type="hidden" name="txnid"            id="pf_txnid" />
+    <input type="hidden" name="amount"           id="pf_amount" />
+    <input type="hidden" name="productinfo"      id="pf_productinfo" />
+    <input type="hidden" name="firstname"        id="pf_firstname" />
+    <input type="hidden" name="lastname"         id="pf_lastname" />
+    <input type="hidden" name="email"            id="pf_email" />
+    <input type="hidden" name="phone"            id="pf_phone" />
+    <input type="hidden" name="udf1"             id="pf_udf1" />
+    <input type="hidden" name="surl"             id="pf_surl" />
+    <input type="hidden" name="furl"             id="pf_furl" />
+    <input type="hidden" name="hash"             id="pf_hash" />
+    <input type="hidden" name="service_provider" value="payu_paisa" />
+</form>
+
+<script>
+    const TAX_RATE = 0.10;
+    let cart = [];
+    let selectedPay = 'cod';
+
+    /* ── Helpers ── */
+    const fmt = n => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 0 });
+    const sub  = ()  => cart.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
+    const tot  = ()  => { const s = sub(); return s + s * TAX_RATE; };
+
+    function showAlert(id, msg, type) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.className = `co-alert ${type}`;
+        el.style.display = 'block';
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function hideAlert(id) { document.getElementById(id).style.display = 'none'; }
+
+    /* ── Cart loading ── */
+    function loadCart() {
+        try {
+            const snap = sessionStorage.getItem('DNACheckoutCart');
+            if (snap) {
+                const p = JSON.parse(snap);
+                cart = Array.isArray(p) ? p : (p.cart || []);
+            } else {
+                const stored = JSON.parse(localStorage.getItem('cart') || '[]');
+                cart = Array.isArray(stored) ? stored : [];
+            }
+        } catch { cart = []; }
+    }
+
+    /* ── Render items (used for both review panel and sidebar) ── */
+    function itemHtml(item, compact) {
+        const PLACEHOLDER = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='28' fill='%23cbd5e1'%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E`;
+        const img = item.imageUrl ? item.imageUrl : PLACEHOLDER;
+        const price = fmt((item.price || 0) * (item.quantity || 1));
+        if (compact) {
+            return `<div class="order-item" style="padding:.6rem 0;">
+                <img class="order-item-img" src="${img}" style="width:44px;height:44px;"
+                     onerror="this.onerror=null;this.src='${PLACEHOLDER}'" alt="" />
+                <div class="order-item-info">
+                    <div class="order-item-name" style="font-size:.82rem;">${item.name || 'Product'}</div>
+                    <span class="qty-badge">×${item.quantity || 1}</span>
+                </div>
+                <div class="order-item-price" style="font-size:.84rem;">${price}</div>
+            </div>`;
+        }
+        return `<div class="order-item">
+            <img class="order-item-img" src="${img}" onerror="this.onerror=null;this.src='${PLACEHOLDER}'" alt="" />
+            <div class="order-item-info">
+                <div class="order-item-name">${item.name || 'Product'}</div>
+                <div class="order-item-cat">${item.category || ''}</div>
+                <div class="order-item-qty-row">
+                    <span class="qty-badge"><i class="fas fa-hashtag" style="font-size:.6rem;"></i> Qty: ${item.quantity || 1}</span>
+                    <span style="font-size:.75rem; color:#a1a1aa;">&#64; ${fmt(item.price || 0)} each</span>
+                </div>
+            </div>
+            <div class="order-item-price">${price}</div>
+        </div>`;
+    }
+
+    function renderAll() {
+        document.getElementById('reviewItems').innerHTML  = cart.map(i => itemHtml(i, false)).join('');
+        document.getElementById('sidebarItems').innerHTML = cart.map(i => itemHtml(i, true)).join('');
+        const s = sub(), g = s * TAX_RATE;
+        document.getElementById('itemCountLabel').textContent =
+            `${cart.length} item${cart.length !== 1 ? 's' : ''} · ${fmt(tot())} total`;
+        document.getElementById('totSubtotal').textContent = fmt(s);
+        document.getElementById('totGst').textContent      = fmt(g);
+        document.getElementById('totGrand').textContent    = fmt(s + g);
+    }
+
+    /* ── Fill address fields from a user profile object ── */
+    function fillAddressFields(u, lock) {
+        if (u.name) {
+            const parts = u.name.split(' ');
+            document.getElementById('coFirstname').value = parts[0] || '';
+            document.getElementById('coLastname').value  = parts.length > 1 ? parts.slice(1).join(' ') : '';
+        }
+        if (u.email)  document.getElementById('coEmail').value   = u.email;
+        if (u.mobile) document.getElementById('coPhone').value   = u.mobile;
+        const addrVal = u.addressLine1 || u.address || '';
+        document.getElementById('coAddress').value = addrVal;
+        document.getElementById('coCity').value    = u.city  || '';
+        document.getElementById('coPostal').value  = u.zip   || '';
+        const fields = ['coFirstname','coLastname','coEmail','coPhone','coAddress','coCity','coPostal'];
+        fields.forEach(id => { document.getElementById(id).readOnly = lock; });
+    }
+
+    function clearAddressFields() {
+        ['coFirstname','coLastname','coEmail','coPhone','coAddress','coCity','coPostal'].forEach(id => {
+            const el = document.getElementById(id);
+            el.value    = '';
+            el.readOnly = false;
+        });
+    }
+
+    /* ── Prefill from localStorage currentUser (basic, no address) ── */
+    function prefill() {
+        try {
+            const u = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (!u) return;
+            if (u.name) {
+                const parts = u.name.split(' ');
+                document.getElementById('coFirstname').value = parts[0] || '';
+                if (parts.length > 1) document.getElementById('coLastname').value = parts.slice(1).join(' ');
+            }
+            if (u.email)  document.getElementById('coEmail').value = u.email;
+            if (u.mobile) document.getElementById('coPhone').value = u.mobile;
+        } catch {}
+    }
+
+    /* ── Saved-address checkbox logic ── */
+    let _savedProfile = null;
+
+    async function fetchProfile() {
+        if (_savedProfile) return _savedProfile;
+        try {
+            const res = await fetch('/api/users/me', { credentials: 'include' });
+            if (!res.ok) return null;
+            _savedProfile = await res.json();
+            return _savedProfile;
+        } catch { return null; }
+    }
+
+    document.getElementById('useSavedAddress').addEventListener('change', async function () {
+        if (this.checked) {
+            const u = await fetchProfile();
+            if (!u) {
+                this.checked = false;
+                showAlert('coAlert', 'No saved profile found. Please sign in or enter your address below.', 'error');
+                return;
+            }
+            fillAddressFields(u, true);
+            hideAlert('coAlert');
+        } else {
+            clearAddressFields();
+        }
+    });
+
+    /* ── Auto-check if profile has a saved address ── */
+    async function tryAutoFill() {
+        const u = await fetchProfile();
+        if (!u) return;
+        const hasAddress = !!(u.addressLine1 || u.address || u.city);
+        if (hasAddress) {
+            document.getElementById('useSavedAddress').checked = true;
+            fillAddressFields(u, true);
+        } else {
+            prefill();
+        }
+    }
+
+    /* ── Step navigation ── */
+    function goToStep(n) {
+        if (n === 2) {
+            document.getElementById('stepReview').style.display  = 'none';
+            document.getElementById('stepPayment').style.display = 'block';
+            document.getElementById('s1').className = 'step done';
+            document.getElementById('s1num').innerHTML = '<i class="fas fa-check" style="font-size:.6rem;"></i>';
+            document.getElementById('s2').className = 'step active';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            document.getElementById('stepReview').style.display  = 'block';
+            document.getElementById('stepPayment').style.display = 'none';
+            document.getElementById('s1').className = 'step active';
+            document.getElementById('s1num').textContent = '1';
+            document.getElementById('s2').className = 'step inactive';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    /* ── Form validation ── */
+    function getDelivery() {
+        return {
+            firstname: document.getElementById('coFirstname').value.trim(),
+            lastname:  document.getElementById('coLastname').value.trim(),
+            email:     document.getElementById('coEmail').value.trim(),
+            phone:     document.getElementById('coPhone').value.trim(),
+            address:   document.getElementById('coAddress').value.trim(),
+            city:      document.getElementById('coCity').value.trim(),
+            postal:    document.getElementById('coPostal').value.trim(),
+        };
+    }
+    function validateDelivery(d) {
+        if (!d.firstname) return 'Please enter your first name.';
+        if (!d.email || !/\S+@@\S+\.\S+/.test(d.email)) return 'Please enter a valid email.';
+        if (!d.phone) return 'Please enter your phone number.';
+        if (!d.address) return 'Please enter your delivery address.';
+        if (!d.city) return 'Please enter your city.';
+        if (!d.postal) return 'Please enter your PIN code.';
+        return null;
+    }
+
+    /* ── Payment method UI ── */
+    function setPayUI(val) {
+        selectedPay = val;
+        document.querySelectorAll('.pay-method').forEach(el => {
+            el.classList.toggle('selected', el.dataset.pay === val);
+            el.querySelector('input[type=radio]').checked = el.dataset.pay === val;
+        });
+        document.getElementById('upiPanel').style.display   = val === 'upi'  ? 'block' : 'none';
+        document.getElementById('payuPanel').style.display  = val === 'payu' ? 'block' : 'none';
+        const btn = document.getElementById('placeOrderBtn');
+        btn.className = `btn-place ${val}-style`;
+        btn.innerHTML = val === 'cod'
+            ? '<i class="fas fa-check-circle"></i> Place Order — Pay on Delivery'
+            : val === 'upi'
+            ? '<i class="fas fa-mobile-screen-button"></i> Confirm UPI Payment'
+            : '<i class="fas fa-arrow-right"></i> Continue to PayU';
+    }
+
+    /* ── UPI QR ── */
+    function initQr() {
+        const id  = document.getElementById('upiIdText').textContent.trim();
+        const uri = encodeURIComponent(`upi://pay?pa=${id}&pn=DNA%20Softech&cu=INR`);
+        document.getElementById('upiQrImg').src =
+            `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${uri}`;
+    }
+
+    /* ── Place order: COD / UPI ── */
+    async function placeDirectOrder() {
+        const d   = getDelivery();
+        if (selectedPay === 'upi' && !document.getElementById('upiRef').value.trim()) {
+            showAlert('payAlert', 'Please enter the UPI transaction reference ID.', 'error');
+            return;
+        }
+        const btn = document.getElementById('placeOrderBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch spin"></i> Processing your order…';
+
+        try {
+            const res = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    items: cart.map(i => ({ productId: i.productId, quantity: i.quantity, name: i.name, price: i.price, imageUrl: i.imageUrl || '' })),
+                    customer: { name: `${d.firstname} ${d.lastname}`.trim(), email: d.email, phone: d.phone, address: d.address, city: d.city, postal: d.postal },
+                    payment: { method: selectedPay, details: selectedPay === 'upi' ? document.getElementById('upiRef').value.trim() : '' },
+                    total: tot()
+                })
+            });
+
+            if (!res.ok) {
+                const txt = await res.clone().text();
+                throw new Error(txt || `Server error ${res.status}`);
+            }
+            const result = await res.json();
+
+            // Clear cart
+            try { sessionStorage.removeItem('DNACheckoutCart'); localStorage.removeItem('cart'); } catch {}
+
+            showAlert('payAlert', `✅ Order placed! Order #${result.orderId || result.id || 'N/A'}. A confirmation email is on its way.`, 'success');
+            btn.innerHTML = '<i class="fas fa-circle-check"></i> Done!';
+            setTimeout(() => { window.location.href = '/Shop/Orders'; }, 2500);
+        } catch (err) {
+            showAlert('payAlert', `Couldn't place order: ${err.message}`, 'error');
+            btn.disabled = false;
+            setPayUI(selectedPay);
+        }
+    }
+
+    /* ── Place order: PayU ── */
+    async function initiatePayU() {
+        const d   = getDelivery();
+        const btn = document.getElementById('placeOrderBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch spin"></i> Redirecting to PayU…';
+
+        try {
+            const res = await fetch('/api/payu/initiate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    firstname: d.firstname, lastname: d.lastname,
+                    email: d.email, phone: d.phone,
+                    address: d.address, city: d.city, postal: d.postal,
+                    amount: tot(),
+                    items: cart.map(i => ({ productId: i.productId, name: i.name, quantity: i.quantity, price: i.price }))
+                })
+            });
+
+            if (!res.ok) {
+                const txt = await res.clone().text();
+                throw new Error(txt || `Server error ${res.status}`);
+            }
+            const data = await res.json();
+
+            try { sessionStorage.removeItem('DNACheckoutCart'); localStorage.removeItem('cart'); } catch {}
+
+            document.getElementById('payuForm').action   = data.payuUrl;
+            document.getElementById('pf_key').value      = data.key;
+            document.getElementById('pf_txnid').value    = data.txnid;
+            document.getElementById('pf_amount').value   = data.amount;
+            document.getElementById('pf_productinfo').value = data.productinfo;
+            document.getElementById('pf_firstname').value = data.firstname;
+            document.getElementById('pf_lastname').value  = data.lastname || '';
+            document.getElementById('pf_email').value     = data.email;
+            document.getElementById('pf_phone').value     = data.phone || '';
+            document.getElementById('pf_udf1').value      = data.udf1 || '';
+            document.getElementById('pf_surl').value      = data.surl;
+            document.getElementById('pf_furl').value      = data.furl;
+            document.getElementById('pf_hash').value      = data.hash;
+            document.getElementById('payuForm').submit();
+        } catch (err) {
+            showAlert('payAlert', `Payment initiation failed: ${err.message}`, 'error');
+            btn.disabled = false;
+            setPayUI(selectedPay);
+        }
+    }
+
+    /* ── User button ── */
+    (function() {
+        try {
+            const u = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        } catch {}
+    })();
+
+    /* ── Event wiring ── */
+    document.getElementById('proceedBtn').addEventListener('click', () => {
+        hideAlert('coAlert');
+        const err = validateDelivery(getDelivery());
+        if (err) { showAlert('coAlert', err, 'error'); return; }
+        goToStep(2);
+    });
+
+    document.getElementById('backToReviewBtn').addEventListener('click', () => goToStep(1));
+
+    document.querySelectorAll('.pay-method').forEach(el => {
+        el.addEventListener('click', () => setPayUI(el.dataset.pay));
+    });
+
+    document.getElementById('placeOrderBtn').addEventListener('click', () => {
+        hideAlert('payAlert');
+        if (selectedPay === 'payu') initiatePayU();
+        else placeDirectOrder();
+    });
+
+    /* ── Handle PayU return ── */
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payustatus') === 'failed') {
+        window.addEventListener('DOMContentLoaded', () => {
+            goToStep(2);
+            showAlert('payAlert', 'Payment was cancelled or failed. Try a different method.', 'error');
+        });
+    }
+
+    /* ── Init ── */
+    window.addEventListener('DOMContentLoaded', () => {
+        loadCart();
+        if (!cart.length) {
+            document.getElementById('emptyWrap').style.display = 'block';
+            document.getElementById('stepsWrap').style.display = 'none';
+        } else {
+            document.getElementById('pageWrap').style.display = 'grid';
+            renderAll();
+            tryAutoFill();
+            initQr();
+        }
+    });
+</script>
+</body>
+</html>

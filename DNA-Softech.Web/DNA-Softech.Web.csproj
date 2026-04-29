@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>DNASoftech.Web</RootNamespace>
+		<AssemblyName>DNA-Softech.Web</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- SQL Server provider for LocalDB / Azure SQL -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.15" />
+
+		<!-- EF Core Design tools - needed so 'dotnet ef' can use this as startup-project -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.15">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\DNA-Softech.Application\DNA-Softech.Application.csproj" />
+		<ProjectReference Include="..\DNA-Softech.Domain\DNA-Softech.Domain.csproj" />
+		<ProjectReference Include="..\DNA-Softech.Infrastructure\DNA-Softech.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>

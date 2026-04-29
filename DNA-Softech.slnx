@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DNA-Softech.Application/DNA-Softech.Application.csproj" />
+  <Project Path="DNA-Softech.Domain/DNA-Softech.Domain.csproj" />
+  <Project Path="DNA-Softech.Infrastructure/DNA-Softech.Infrastructure.csproj" />
+  <Project Path="DNA-Softech.Web/DNA-Softech.Web.csproj" />
+</Solution>

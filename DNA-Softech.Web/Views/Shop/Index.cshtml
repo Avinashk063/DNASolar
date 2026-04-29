@@ -1,0 +1,497 @@
+@{
+    ViewData["Title"] = "DNA SOFTECH SHOP";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DNA Softech Shop</title>
+    <meta name="description" content="Premium solar panels, inverters and battery systems — DNA Softech" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="~/css/shop.css" asp-append-version="true" />
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-top">
+            <div class="container-fluid">
+                <a href="/" class="logo">
+                    <img src="~/img/BrandLogo.png" alt="DNA Softech" class="brand-logo-img" />
+                    <span class="brand-name">DNA Softech</span>
+                </a>
+
+                <div class="search-section">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search for solar panels, inverters, batteries..." />
+                        <button class="search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <a href="/Shop/Orders" id="myOrdersLink" class="header-btn" style="display:none; text-decoration:none;">
+                        <span class="header-icon-wrap"><i class="fas fa-box"></i></span>
+                        <span class="header-btn-label">Orders</span>
+                    </a>
+                    <a href="/Admin" id="adminLink" class="header-btn header-btn--admin" style="display:none; text-decoration:none;">
+                        <span class="header-icon-wrap"><i class="fas fa-shield-alt"></i></span>
+                        <span class="header-btn-label">Admin</span>
+                    </a>
+                    <button class="header-btn" id="wishlistBtn">
+                        <span class="header-icon-wrap"><i class="far fa-heart"></i></span>
+                        <span class="header-btn-label">Wishlist</span>
+                        <span class="badge" id="wishlistCount">0</span>
+                    </button>
+                    <button class="header-btn" id="cartToggle">
+                        <span class="header-icon-wrap"><i class="fas fa-shopping-cart"></i></span>
+                        <span class="header-btn-label">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </button>
+                    <button class="header-btn header-btn--user" id="userBtn">
+                        <span class="header-icon-wrap user-avatar" id="userAvatar"><i class="far fa-user"></i></span>
+                        <span class="header-btn-label" id="userName">Account</span>
+                        <span id="adminBadge" class="badge badge--admin" style="display:none;">Admin</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <nav class="category-nav">
+            <div id="categoryContainer" class="container-fluid">
+                <!-- Categories loaded by shop.js -->
+            </div>
+        </nav>
+    </header>
+
+    <div id="miniToast" class="mini-toast" aria-hidden="true"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+        <div class="container-fluid">
+
+            <!-- Promo Strip -->
+            <div class="promo-strip">
+                <div class="promo-strip-item"><i class="fas fa-shipping-fast"></i><span>Free Delivery on orders over ₹10,000</span></div>
+                <div class="promo-strip-sep"></div>
+                <div class="promo-strip-item"><i class="fas fa-shield-alt"></i><span>15-Year Product Warranty</span></div>
+                <div class="promo-strip-sep"></div>
+                <div class="promo-strip-item"><i class="fas fa-undo"></i><span>30-Day Easy Returns</span></div>
+                <div class="promo-strip-sep"></div>
+                <div class="promo-strip-item"><i class="fas fa-headset"></i><span>24/7 Solar Support</span></div>
+            </div>
+
+            <!-- Shop Header -->
+            <div class="shop-header">
+                <div class="shop-breadcrumb">
+                    <a href="/">Home</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span id="breadcrumbCategory">All Products</span>
+                </div>
+                <h1 class="shop-title" id="shopTitle">Solar Products</h1>
+                <p class="shop-subtitle" id="resultsMeta">Loading products…</p>
+            </div>
+
+            <!-- Loading Skeleton -->
+            <div id="loadingSpinner" class="loading-spinner hidden">
+                <div class="skeleton-grid">
+                    <div class="skeleton-card" aria-hidden="true">
+                        <div class="skeleton-img skeleton-pulse"></div>
+                        <div class="skeleton-body">
+                            <div class="skeleton-line skeleton-pulse"></div>
+                            <div class="skeleton-line short skeleton-pulse"></div>
+                            <div class="skeleton-line skeleton-pulse"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card" aria-hidden="true">
+                        <div class="skeleton-img skeleton-pulse"></div>
+                        <div class="skeleton-body">
+                            <div class="skeleton-line skeleton-pulse"></div>
+                            <div class="skeleton-line short skeleton-pulse"></div>
+                            <div class="skeleton-line skeleton-pulse"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card" aria-hidden="true">
+                        <div class="skeleton-img skeleton-pulse"></div>
+                        <div class="skeleton-body">
+                            <div class="skeleton-line skeleton-pulse"></div>
+                            <div class="skeleton-line short skeleton-pulse"></div>
+                            <div class="skeleton-line skeleton-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile filter overlay -->
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+            <!-- Mobile filter toggle button -->
+            <button class="filter-fab" id="filterFab" aria-label="Open Filters">
+                <i class="fas fa-sliders-h"></i> Filters
+            </button>
+
+            <div class="content-wrapper">
+                <!-- Sidebar Filters -->
+                <aside class="sidebar" id="filterSidebar">
+                    <div class="sidebar-close-btn">
+                        <span><i class="fas fa-sliders-h"></i> Filters</span>
+                        <button id="closeSidebar" aria-label="Close filters"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="filter-section">
+                        <h3><i class="fas fa-sliders-h"></i> Filters</h3>
+                        <button class="clear-filters" id="clearFilters">Clear All</button>
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="filter-group is-open" data-collapsible>
+                        <button class="filter-group-toggle" aria-expanded="true">
+                            Sort By <i class="fas fa-chevron-down filter-chevron"></i>
+                        </button>
+                        <div class="filter-group-content">
+                            <select id="sortBy" class="sort-select">
+                                <option value="popularity">Most Popular</option>
+                                <option value="newest">Newest First</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="rating">Highest Rated</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Price Filter -->
+                    <div class="filter-group is-open" data-collapsible>
+                        <button class="filter-group-toggle" aria-expanded="true">
+                            Price Range <i class="fas fa-chevron-down filter-chevron"></i>
+                        </button>
+                        <div class="filter-group-content">
+                            <div class="price-range-label" id="priceRangeValue">Up to ₹0</div>
+                            <input type="range" id="priceRange" min="0" max="500000" step="1000" value="0" class="price-slider" />
+                            <div class="price-inputs">
+                                <input type="number" id="minPrice" placeholder="Min ₹" class="price-input" />
+                                <span class="price-sep">–</span>
+                                <input type="number" id="maxPrice" placeholder="Max ₹" class="price-input" />
+                            </div>
+                            <button class="btn-apply-price" id="applyPrice">Apply</button>
+                        </div>
+                    </div>
+
+                    <!-- Rating Filter -->
+                    <div class="filter-group is-open" data-collapsible>
+                        <button class="filter-group-toggle" aria-expanded="true">
+                            Customer Rating <i class="fas fa-chevron-down filter-chevron"></i>
+                        </button>
+                        <div class="filter-group-content">
+                            <label class="filter-option">
+                                <input type="checkbox" name="rating" value="4" />
+                                <span class="stars-mini">★★★★☆</span>
+                                <span>4 &amp; above</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="rating" value="3" />
+                                <span class="stars-mini">★★★☆☆</span>
+                                <span>3 &amp; above</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="rating" value="2" />
+                                <span class="stars-mini">★★☆☆☆</span>
+                                <span>2 &amp; above</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Availability -->
+                    <div class="filter-group is-open" data-collapsible>
+                        <button class="filter-group-toggle" aria-expanded="true">
+                            Availability <i class="fas fa-chevron-down filter-chevron"></i>
+                        </button>
+                        <div class="filter-group-content">
+                            <label class="filter-option">
+                                <input type="checkbox" name="stock" />
+                                <span>In Stock Only</span>
+                            </label>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Products Section -->
+                <div class="products-section">
+                    <div class="section-header">
+                        <div>
+                            <h2>All Products</h2>
+                        </div>
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-view="grid" title="Grid View"><i class="fas fa-th-large"></i></button>
+                            <button class="view-btn" data-view="list" title="List View"><i class="fas fa-bars"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- No Results -->
+                    <div id="noResults" class="no-results hidden">
+                        <i class="fas fa-search"></i>
+                        <h3>No products found</h3>
+                        <p>Try adjusting your filters or search term</p>
+                        <button class="btn-primary" onclick="document.getElementById('clearFilters').click()">
+                            Clear Filters
+                        </button>
+                    </div>
+
+                    <div id="productsContainer" class="products-grid">
+                        <!-- Products loaded by shop.js -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+            (function () {
+                var fab      = document.getElementById('filterFab');
+                var sidebar  = document.getElementById('filterSidebar');
+                var overlay  = document.getElementById('sidebarOverlay');
+                var closeBtn = document.getElementById('closeSidebar');
+
+                function openSidebar() {
+                    sidebar.classList.add('is-open');
+                    overlay.classList.add('is-open');
+                    document.body.classList.add('filter-open');
+                }
+                function closeSidebar() {
+                    sidebar.classList.remove('is-open');
+                    overlay.classList.remove('is-open');
+                    document.body.classList.remove('filter-open');
+                }
+
+                if (fab)      fab.addEventListener('click', openSidebar);
+                if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+                if (overlay)  overlay.addEventListener('click', closeSidebar);
+
+                // Close sidebar when any filter is applied (on mobile)
+                document.addEventListener('change', function (e) {
+                    if (window.innerWidth <= 768 && e.target.closest('#filterSidebar')) {
+                        setTimeout(closeSidebar, 300);
+                    }
+                });
+            }());
+    </script>
+
+    <!-- ===== WISHLIST PANEL =====
+    <aside id="wishlistPanel" class="wishlist-panel side-panel">
+    <div class="cart-header">
+        <h3><i class="fas fa-heart"></i> My Wishlist</h3>
+        <button class="close-cart" id="closeWishlist"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-body">
+        <div id="emptyWishlist" class="panel-empty-state">
+            <i class="far fa-heart"></i>
+            <p class="panel-empty-title">Your wishlist is empty</p>
+            <p class="panel-empty-sub">Save products you love to find them easily later</p>
+        </div>
+        <ul id="wishlistItems" class="cart-items hidden"></ul>
+    </div>
+</aside>
+
+<!-- ===== CART PANEL ===== -->
+<aside id="cartPanel" class="cart-panel side-panel">
+    <div class="cart-header">
+        <h3><i class="fas fa-shopping-cart"></i> My Cart</h3>
+        <button class="close-cart" id="closeCart"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-body">
+        <div id="emptyCart" class="panel-empty-state">
+            <i class="fas fa-shopping-cart"></i>
+            <p class="panel-empty-title">Your cart is empty</p>
+            <p class="panel-empty-sub">Add products to get started</p>
+        </div>
+        <ul id="cartItems" class="cart-items hidden"></ul>
+    </div>
+    <div class="cart-footer">
+        <div class="cart-total-row">
+            <span>Subtotal</span>
+            <span id="cartSubtotal">₹0.00</span>
+        </div>
+        <div class="cart-total-row cart-total-row--main">
+            <span>Total (incl. taxes)</span>
+            <span id="cartTotal">₹0.00</span>
+        </div>
+        <button class="btn-checkout-cta" id="checkoutBtn">
+            <i class="fas fa-lock"></i> Proceed to Checkout
+        </button>
+        <button class="btn-continue-shopping" id="closeCartBtn">Continue Shopping</button>
+    </div>
+</aside>
+
+<!-- ===== USER MODAL ===== -->
+<div id="userModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
+    <div class="modal-content modal-content--sm">
+        <div class="modal-header">
+            <h3 id="userModalTitle">My Account</h3>
+            <button class="modal-close" id="closeUserModal" aria-label="Close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div id="userProfile" class="hidden">
+                <!-- ── Profile view ── -->
+                <div id="profileViewSection">
+                    <div class="profile-hero">
+                        <div class="profile-avatar-lg" id="profileAvatar">U</div>
+                        <div>
+                            <h4 id="profileName" class="profile-name">User Name</h4>
+                            <p id="profileEmail" class="profile-email">user@email.com</p>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button id="editProfileBtn" class="btn-outline-primary"><i class="fas fa-edit"></i> Edit Profile</button>
+                        <button id="logoutBtn" class="btn-danger-outline"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </div>
+                </div>
+                <!-- ── Inline edit form ── -->
+                <div id="profileEditSection" class="hidden" style="margin-top:.5rem;">
+                    <p style="font-weight:700;font-size:.95rem;margin-bottom:.9rem;color:var(--dark-navy,#1e293b);">
+                        <i class="fas fa-user-edit" style="color:var(--primary-color);margin-right:.4rem;"></i>Edit Profile
+                    </p>
+                    <div id="editProfileError" style="display:none;background:#fee2e2;color:#b91c1c;padding:.55rem .75rem;border-radius:8px;font-size:.82rem;margin-bottom:.75rem;"></div>
+                    <div class="form-group" style="margin-bottom:.75rem;">
+                        <label style="font-size:.8rem;font-weight:600;color:#64748b;display:block;margin-bottom:.3rem;">Full Name *</label>
+                        <input type="text" id="editName" class="form-control" placeholder="Your full name" style="width:100%;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:.75rem;">
+                        <label style="font-size:.8rem;font-weight:600;color:#64748b;display:block;margin-bottom:.3rem;">Mobile</label>
+                        <input type="tel" id="editPhone" class="form-control" placeholder="+91 98765 43210" style="width:100%;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:.9rem;">
+                        <label style="font-size:.8rem;font-weight:600;color:#64748b;display:block;margin-bottom:.3rem;">Address</label>
+                        <input type="text" id="editAddress" class="form-control" placeholder="Street, City" style="width:100%;" />
+                    </div>
+                    <div style="display:flex;gap:.6rem;">
+                        <button id="saveProfileBtn" class="btn-primary" style="flex:1;">Save</button>
+                        <button id="cancelEditBtn" class="btn-outline-primary" style="flex:1;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <div id="authForms">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="showLogin">Sign In</button>
+                    <button class="auth-tab" id="showRegister">Create Account</button>
+                </div>
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" name="email" placeholder="your@email.com" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" name="password" placeholder="••••••••" required />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block">Sign In <i class="fas fa-arrow-right"></i></button>
+                </form>
+                <form id="registerForm" class="auth-form hidden">
+                    <!-- Step 1: basic info -->
+                    <div id="regStep1">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <div class="input-icon-wrap">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" name="name" placeholder="John Doe" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <div class="input-icon-wrap">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" name="email" placeholder="your@email.com" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <div class="input-icon-wrap">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" name="password" placeholder="Create a strong password" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Step 2: OTP (hidden until code is sent) -->
+                    <div id="otpSection" style="display:none">
+                        <div class="otp-info-box">
+                            <i class="fas fa-envelope-circle-check" style="color:#10b981;font-size:1.2rem;"></i>
+                            <span id="otpSentMsg" style="font-size:.85rem;color:#334155;">OTP sent — check your inbox</span>
+                        </div>
+                        <div class="form-group">
+                            <label>6-Digit OTP</label>
+                            <div class="input-icon-wrap">
+                                <i class="fas fa-shield-halved input-icon"></i>
+                                <input type="text" name="otp" id="otpInput" maxlength="6" placeholder="_ _ _ _ _ _"
+                                       inputmode="numeric" autocomplete="one-time-code"
+                                       style="letter-spacing:.35rem;font-size:1.1rem;font-weight:700;text-align:center;" />
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;font-size:.78rem;">
+                            <span id="otpTimer" style="color:#64748b;"></span>
+                            <button type="button" id="resendOtpBtn" style="display:none;background:none;border:none;color:#4f46e5;font-weight:600;cursor:pointer;font-size:.78rem;">Resend OTP</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block" id="registerSubmitBtn">
+                        Send Verification Code <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PRODUCT MODAL ===== -->
+<div id="productModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content modal-content--lg">
+        <div class="modal-header">
+            <h3>Product Details</h3>
+            <button class="modal-close" id="closeProductModal" aria-label="Close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body modal-body--product">
+            <div class="modal-product-image-wrap">
+                <img id="modalProductImage" src="" alt="" class="modal-product-image" />
+            </div>
+            <div class="modal-product-details">
+                <h2 id="modalProductName" class="modal-product-name"></h2>
+                <div class="modal-rating">
+                    <div class="stars" id="modalProductStars"></div>
+                    <span id="modalProductReviews" class="rating-count"></span>
+                </div>
+                <div class="modal-price-row">
+                    <span class="product-price" id="modalProductPrice"></span>
+                    <span class="save-percent" id="modalProductDiscount" style="display:none;"></span>
+                </div>
+                <div class="modal-desc" id="modalProductDesc"></div>
+                <ul class="modal-features" id="modalProductFeatures"></ul>
+                <div class="modal-actions">
+                    <div class="modal-qty">
+                        <button id="modalDecQty" class="qty-btn-modal">−</button>
+                        <input type="number" id="modalQty" value="1" min="1" class="qty-input-modal" />
+                        <button id="modalIncQty" class="qty-btn-modal">+</button>
+                    </div>
+                    <button id="modalAddToCart" class="btn-add-cart">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                    <button id="modalAddToWishlist" class="btn-wishlist">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="overlay" class="overlay"></div>
+
+<script src="~/js/ui.js" asp-append-version="true"></script>
+<script src="~/js/shop.js" asp-append-version="true"></script>
+</body>
+</html>

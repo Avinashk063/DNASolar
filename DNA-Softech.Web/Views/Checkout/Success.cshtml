@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Order Successful - DNA SOFTECH";
+    var orderId = ViewData["OrderId"]?.ToString();
+}
+
+<div style="max-width: 600px; margin: 80px auto; padding: 40px 20px; text-align: center; animation: fadeUp 0.6s ease-out;">
+    <div class="premium-card" style="padding: 60px 40px;">
+        <div style="width: 80px; height: 80px; background: rgba(16, 185, 129, 0.1); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 24px;">
+            <i class="fas fa-check"></i>
+        </div>
+        
+        <h1 style="font-size: 28px; margin-bottom: 16px;">Payment Successful!</h1>
+        <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 30px;">
+            Thank you for your order. We've received your payment and your internal order ID is <strong>#@orderId</strong>.
+            A confirmation email has been sent to your address.
+        </p>
+
+        <div style="display: flex; gap: 16px; justify-content: center; margin-top: 40px;">
+            <a href="/Shop" class="btn-ghost">Continue Shopping</a>
+            <a href="/Account/Orders" class="btn-premium">View My Orders</a>
+        </div>
+    </div>
+</div>

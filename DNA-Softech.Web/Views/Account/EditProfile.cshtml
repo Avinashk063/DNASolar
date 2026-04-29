@@ -1,0 +1,340 @@
+﻿@{
+    ViewData["Title"] = "Edit Profile — DNA Softech";
+}
+
+@section Styles {
+<style>
+.ep-page {
+    max-width: 580px;
+    margin: 2.5rem auto;
+    padding: 0 1rem 3rem;
+}
+.ep-heading {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+.ep-heading i { color: #6366f1; }
+.ep-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(15,23,42,.08);
+    overflow: hidden;
+}
+/* ── Avatar section ── */
+.ep-avatar-section {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .9rem;
+}
+.ep-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.18);
+    border: 3px solid rgba(255,255,255,.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #fff;
+    overflow: hidden;
+    cursor: pointer;
+    transition: opacity .2s;
+    position: relative;
+}
+.ep-avatar:hover .ep-avatar-overlay { opacity: 1; }
+.ep-avatar-overlay {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: rgba(0,0,0,.45);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .2s;
+    font-size: 1.5rem; color: #fff;
+}
+.ep-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.ep-photo-label {
+    background: rgba(255,255,255,.18);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,.5);
+    border-radius: 8px;
+    padding: .45rem 1.1rem;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s;
+    display: flex; align-items: center; gap: .4rem;
+}
+.ep-photo-label:hover { background: rgba(255,255,255,.28); }
+.ep-upload-hint { font-size: .72rem; color: rgba(255,255,255,.7); }
+/* ── Form ── */
+.ep-form { padding: 1.8rem; }
+.ep-field { margin-bottom: 1.1rem; }
+.ep-field label {
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: .35rem;
+}
+.ep-field input, .ep-field textarea {
+    width: 100%;
+    padding: .65rem .85rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: .9rem;
+    color: #0f172a;
+    background: #f8fafc;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+}
+.ep-field input:focus, .ep-field textarea:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    background: #fff;
+}
+.ep-field input[readonly] { color: #94a3b8; cursor: not-allowed; background: #f1f5f9; }
+.ep-row { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+.ep-actions { display: flex; gap: .75rem; margin-top: 1.4rem; }
+.ep-btn-save {
+    flex: 1;
+    background: linear-gradient(90deg, #6366f1, #4f46e5);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .75rem 1.2rem;
+    font-size: .92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+}
+.ep-btn-save:disabled { opacity: .6; cursor: not-allowed; }
+.ep-btn-back {
+    padding: .75rem 1.2rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    color: #64748b;
+    font-size: .92rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex; align-items: center; gap: .4rem;
+    transition: border-color .2s;
+}
+.ep-btn-back:hover { border-color: #6366f1; color: #6366f1; }
+.ep-alert {
+    display: none;
+    margin-top: .9rem;
+    padding: .6rem .85rem;
+    border-radius: 8px;
+    font-size: .84rem;
+    font-weight: 600;
+}
+.ep-alert.success { background: #dcfce7; color: #15803d; }
+.ep-alert.error   { background: #fee2e2; color: #b91c1c; }
+.ep-divider { height: 1px; background: #f1f5f9; margin: .5rem 0 1.1rem; }
+</style>
+}
+
+<div class="ep-page">
+    <div class="ep-heading">
+        <i class="fas fa-user-edit"></i> Edit Profile
+    </div>
+
+    <div class="ep-card">
+        <!-- Avatar section -->
+        <div class="ep-avatar-section">
+            <div class="ep-avatar" id="epAvatar" onclick="document.getElementById('epPhotoInput').click()">
+                <span id="epAvatarLetter">U</span>
+                <div class="ep-avatar-overlay"><i class="fas fa-camera"></i></div>
+            </div>
+            <label for="epPhotoInput" class="ep-photo-label">
+                <i class="fas fa-camera"></i> Change Photo
+            </label>
+            <input type="file" id="epPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none" />
+            <span class="ep-upload-hint">JPG, PNG or WebP · Max 4 MB</span>
+        </div>
+
+        <!-- Form -->
+        <div class="ep-form">
+            <div class="ep-field">
+                <label for="epName">Full Name *</label>
+                <input type="text" id="epName" placeholder="Your full name" />
+            </div>
+            <div class="ep-field">
+                <label for="epEmail">Email Address</label>
+                <input type="email" id="epEmail" readonly placeholder="—" />
+            </div>
+            <div class="ep-divider"></div>
+            <div class="ep-row">
+                <div class="ep-field">
+                    <label for="epPhone">Mobile</label>
+                    <input type="tel" id="epPhone" placeholder="+91 98765 43210" />
+                </div>
+                <div class="ep-field">
+                    <label for="epCity">City</label>
+                    <input type="text" id="epCity" placeholder="Mumbai" />
+                </div>
+            </div>
+            <div class="ep-field">
+                <label for="epAddress">Street Address</label>
+                <input type="text" id="epAddress" placeholder="123 Solar Street, Apt 4" />
+            </div>
+            <div class="ep-row">
+                <div class="ep-field">
+                    <label for="epState">State</label>
+                    <input type="text" id="epState" placeholder="Maharashtra" />
+                </div>
+                <div class="ep-field">
+                    <label for="epZip">PIN Code</label>
+                    <input type="text" id="epZip" placeholder="400001" />
+                </div>
+            </div>
+
+            <div class="ep-actions">
+                <a href="/Shop" class="ep-btn-back"><i class="fas fa-arrow-left"></i> Back</a>
+                <button id="epSaveBtn" class="ep-btn-save">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+            <div class="ep-alert" id="epAlert"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    var userId = null;
+
+    function showAlert(msg, type) {
+        var el = document.getElementById('epAlert');
+        el.textContent = msg;
+        el.className = 'ep-alert ' + type;
+        el.style.display = 'block';
+        if (type === 'success') setTimeout(() => el.style.display = 'none', 4000);
+    }
+
+    function setAvatar(photoUrl, name) {
+        var av = document.getElementById('epAvatar');
+        var letter = document.getElementById('epAvatarLetter');
+        if (photoUrl) {
+            letter.style.display = 'none';
+            // remove old img if any
+            var old = av.querySelector('img');
+            if (old) old.remove();
+            var img = document.createElement('img');
+            img.src = photoUrl + '?t=' + Date.now();
+            av.insertBefore(img, av.querySelector('.ep-avatar-overlay'));
+        } else {
+            letter.style.display = '';
+            letter.textContent = name ? name.charAt(0).toUpperCase() : 'U';
+        }
+    }
+
+    // ── Load current user ──
+    async function loadProfile() {
+        try {
+            var res = await fetch('/api/users/me', { credentials: 'include' });
+            if (!res.ok) { window.location.href = '/Account/Login?returnUrl=/Account/EditProfile'; return; }
+            var u = await res.json();
+            userId = u.id;
+            document.getElementById('epName').value    = u.name    || '';
+            document.getElementById('epEmail').value   = u.email   || '';
+            document.getElementById('epPhone').value   = u.mobile  || '';
+            document.getElementById('epAddress').value = u.addressLine1 || u.address || '';
+            document.getElementById('epCity').value    = u.city    || '';
+            document.getElementById('epState').value   = u.state   || '';
+            document.getElementById('epZip').value     = u.zip     || '';
+            setAvatar(u.profilePhotoUrl, u.name);
+        } catch (e) {
+            showAlert('Failed to load profile. Please refresh.', 'error');
+        }
+    }
+
+    // ── Photo upload ──
+    document.getElementById('epPhotoInput').addEventListener('change', async function () {
+        var file = this.files[0];
+        if (!file) return;
+        if (file.size > 4 * 1024 * 1024) { showAlert('Photo must be under 4 MB.', 'error'); return; }
+
+        var btn = document.getElementById('epSaveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Uploading…';
+
+        try {
+            var fd = new FormData();
+            fd.append('photo', file);
+            var res = await fetch('/api/users/profile-photo', { method: 'POST', body: fd, credentials: 'include' });
+            if (!res.ok) throw new Error('Upload failed');
+            var data = await res.json();
+            setAvatar(data.profilePhotoUrl, document.getElementById('epName').value);
+            // Update localStorage so the avatar appears everywhere immediately
+            try {
+                var stored = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (stored) { stored.profilePhotoUrl = data.profilePhotoUrl; localStorage.setItem('currentUser', JSON.stringify(stored)); }
+            } catch (e) {}
+            showAlert('Profile photo updated!', 'success');
+        } catch (e) {
+            showAlert('Photo upload failed. Please try again.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        }
+    });
+
+    // ── Save profile ──
+    document.getElementById('epSaveBtn').addEventListener('click', async function () {
+        var name = document.getElementById('epName').value.trim();
+        if (!name) { showAlert('Full name is required.', 'error'); return; }
+
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving…';
+
+        try {
+            var payload = {
+                name:         name,
+                mobile:       document.getElementById('epPhone').value.trim(),
+                addressLine1: document.getElementById('epAddress').value.trim(),
+                city:         document.getElementById('epCity').value.trim(),
+                state:        document.getElementById('epState').value.trim(),
+                zip:          document.getElementById('epZip').value.trim(),
+                address:      document.getElementById('epAddress').value.trim()
+            };
+            var res = await fetch('/api/users/me', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                credentials: 'include'
+            });
+            if (!res.ok) throw new Error('Save failed');
+            // Update localStorage name so header shows updated name
+            try {
+                var stored = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (stored) { stored.name = name; localStorage.setItem('currentUser', JSON.stringify(stored)); }
+            } catch (e) {}
+            document.getElementById('epAvatarLetter').textContent = name.charAt(0).toUpperCase();
+            showAlert('✅ Profile saved successfully!', 'success');
+        } catch (e) {
+            showAlert('Failed to save. Please try again.', 'error');
+        } finally {
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        }
+    });
+
+    loadProfile();
+})();
+</script>
+}

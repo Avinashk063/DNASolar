@@ -1,0 +1,230 @@
+@* Megamart Premium Shop Style *@
+:root {
+    --mega-primary: #1e293b;
+    --mega-accent: #10b981;
+    --mega-bg: #f8fafc;
+    --mega-card: #ffffff;
+    --mega-text: #334155;
+    --mega-muted: #64748b;
+    --mega-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+}
+
+.shop-container {
+    background-color: var(--mega-bg);
+    min-height: 100vh;
+}
+
+/* Hero Section */
+.hero-slider {
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.hero-slide {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 16px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.hero-content {
+    padding: 60px;
+    position: relative;
+    z-index: 10;
+    max-width: 600px;
+}
+
+.hero-badge {
+    background: var(--mega-accent);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 99px;
+    font-weight: 700;
+    font-size: 14px;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.hero-title {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.hero-image {
+    position: absolute;
+    right: 0;
+    height: 100%;
+    width: 60%;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Category Strip */
+.category-strip {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 40px 0;
+    flex-wrap: wrap;
+}
+
+.category-item {
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.category-item:hover {
+    transform: translateY(-5px);
+}
+
+.category-icon-wrap {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--mega-shadow);
+    margin-bottom: 12px;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.category-item.active .category-icon-wrap {
+    border-color: var(--mega-accent);
+}
+
+.category-icon-wrap i {
+    font-size: 32px;
+    color: var(--mega-primary);
+}
+
+.category-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--mega-text);
+}
+
+/* Product Section */
+.shop-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 40px;
+    padding: 20px 0;
+}
+
+/* Sidebar */
+.mega-sidebar {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: var(--mega-shadow);
+    height: fit-content;
+}
+
+/* Cards */
+.mega-product-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--mega-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #f1f5f9;
+}
+
+.mega-product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.card-img-wrap {
+    position: relative;
+    padding-top: 100%;
+    background: #f8fafc;
+}
+
+.card-img-wrap img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+}
+
+.card-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #3b82f6;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-category {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mega-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.card-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--mega-primary);
+    margin-bottom: 12px;
+    height: 48px;
+    overflow: hidden;
+}
+
+.card-price-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.price-now {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--mega-accent);
+}
+
+.price-old {
+    text-decoration: line-through;
+    color: var(--mega-muted);
+    font-size: 14px;
+}
+
+.card-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--mega-primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    margin-top: 15px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.card-btn:hover {
+    opacity: 0.9;
+}

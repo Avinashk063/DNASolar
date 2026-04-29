@@ -1,0 +1,940 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - DNA SOFTECH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true">
+    <style>
+        /* ── Modal overlay ── */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:2000;opacity:0;pointer-events:none;transition:opacity .25s}
+        .modal-overlay.open{opacity:1;pointer-events:all}
+        .modal-box{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:translateY(20px) scale(.97);transition:transform .25s;box-shadow:0 25px 50px rgba(0,0,0,.2)}
+        .modal-overlay.open .modal-box{transform:none}
+        .modal-title{font-size:18px;font-weight:700;color:#0f172a;margin:0 0 20px;display:flex;align-items:center;gap:10px}
+        .modal-close{margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#64748b}
+        .modal-close:hover{color:#ef4444}
+        /* ── Form controls ── */
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .form-grid.full{grid-template-columns:1fr}
+        .form-group{display:flex;flex-direction:column;gap:5px}
+        .form-group label{font-size:13px;font-weight:600;color:#334155}
+        .form-group input,.form-group select,.form-group textarea{padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;transition:border-color .2s;font-family:inherit}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#10b981}
+        .form-group textarea{resize:vertical;min-height:80px}
+        .form-span-2{grid-column:span 2}
+        /* ── Buttons ── */
+        .btn{padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+        .btn-primary{background:#10b981;color:#fff}.btn-primary:hover{background:#059669}
+        .btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+        .btn-secondary{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0}.btn-secondary:hover{background:#e2e8f0}
+        .btn-sm{padding:6px 12px;font-size:13px}
+        .btn-warning{background:#f59e0b;color:#fff}.btn-warning:hover{background:#d97706}
+        /* ── Table extras ── */
+        .action-btns{display:flex;gap:6px;flex-wrap:wrap}
+        .badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+        .badge-success{background:#d1fae5;color:#065f46}
+        .badge-warning{background:#fef3c7;color:#92400e}
+        .badge-danger{background:#fee2e2;color:#991b1b}
+        .badge-default{background:#f1f5f9;color:#475569}
+        /* ── Section header ── */
+        .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .section-head h2{margin:0;font-size:20px;font-weight:700;color:#0f172a}
+        /* ── Search bar ── */
+        .search-input{padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;width:240px;transition:border-color .2s}
+        .search-input:focus{border-color:#10b981}
+        /* ── Image preview ── */
+        #imgPreview{max-width:120px;max-height:120px;border-radius:8px;object-fit:contain;border:1.5px solid #e2e8f0;padding:4px;display:none;margin-top:6px}
+        /* ── Toast ── */
+        #adminToast{position:fixed;bottom:28px;right:28px;background:#0f172a;color:#fff;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);transform:translateY(60px);opacity:0;transition:all .3s;z-index:9999}
+        #adminToast.show{transform:none;opacity:1}
+        #adminToast.success{border-left:4px solid #10b981}
+        #adminToast.error{border-left:4px solid #ef4444}
+        /* ── Product image cell ── */
+        .prod-img{width:48px;height:48px;object-fit:contain;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc}
+        /* ── Empty state ── */
+        .empty-state{text-align:center;padding:60px 20px;color:#94a3b8}
+        .empty-state i{font-size:42px;margin-bottom:14px;display:block}
+        /* ── Responsive table ── */
+        .table-responsive{overflow-x:auto}
+        .admin-table{width:100%;border-collapse:collapse;font-size:14px}
+        .admin-table th{background:#f8fafc;padding:12px 14px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+        .admin-table td{padding:12px 14px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+        .admin-table tr:hover td{background:#f8fafc}
+        .strong{font-weight:700;color:#0f172a}
+        /* ── Content card ── */
+        .content-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:24px;border:1px solid #f1f5f9}
+        .card-title{font-size:16px;font-weight:700;color:#0f172a;margin:0 0 16px}
+        /* ── Stats ── */
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-bottom:24px}
+        .stat-card{background:#fff;border-radius:14px;padding:22px 24px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:4px solid #10b981;border-top:1px solid #f1f5f9}
+        .stat-card.blue{border-left-color:#3b82f6}.stat-card.orange{border-left-color:#f59e0b}.stat-card.purple{border-left-color:#8b5cf6}
+        .stat-title{margin:0 0 6px;font-size:13px;color:#64748b;font-weight:500}
+        .stat-value{margin:0;font-size:28px;font-weight:800;color:#0f172a}
+        /* ── Order detail table ── */
+        .order-items-mini{width:100%;font-size:13px;border-collapse:collapse}
+        .order-items-mini td,.order-items-mini th{padding:6px 10px;border-bottom:1px solid #f1f5f9}
+        .order-items-mini th{background:#f8fafc;font-weight:600;color:#475569}
+
+        /* ── RESPONSIVE overrides (inline wins cascade over admin.css) ── */
+        @@media (max-width: 900px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; margin-bottom: 16px !important; }
+            .stat-card  { padding: 16px 14px !important; }
+            .stat-value { font-size: 22px !important; }
+            .stat-title { font-size: 11px !important; }
+            .content-card { padding: 14px !important; overflow: visible !important; margin-bottom: 16px !important; }
+            .table-responsive { overflow-x: visible !important; width: 100% !important; }
+            .section-head { flex-wrap: wrap; gap: 10px; }
+            .section-head h2 { font-size: 17px; }
+            .section-head > div { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
+            .search-input { width: 100% !important; box-sizing: border-box !important; }
+            .admin-header { padding: 14px 18px !important; margin-bottom: 16px !important; }
+            .header-title { font-size: 1.2rem !important; }
+            /* ── Card-per-row tables (no horizontal scroll) ── */
+            .admin-table { min-width: unset !important; width: 100% !important; }
+            .admin-table thead { display: none !important; }
+            .admin-table tbody tr { display: block !important; margin-bottom: 8px !important; border-radius: 10px !important; border: 1px solid #e2e8f0 !important; padding: 4px 12px !important; background: #fff !important; box-shadow: 0 1px 4px rgba(0,0,0,.05) !important; }
+            .admin-table td { display: flex !important; justify-content: space-between !important; align-items: center !important; border-bottom: 1px solid #f1f5f9 !important; padding: 9px 0 !important; font-size: .85rem !important; white-space: normal !important; }
+            .admin-table td:last-child { border-bottom: none !important; }
+            .admin-table td::before { content: attr(data-label); font-weight: 700; font-size: .68rem; text-transform: uppercase; color: #94a3b8; flex-shrink: 0; min-width: 76px; margin-right: 10px; }
+            .admin-table td[data-label=""] { justify-content: center !important; padding: 10px 0 !important; }
+            .admin-table td[data-label=""]::before { display: none !important; }
+        }
+        @@media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+            .stat-value { font-size: 18px !important; }
+            .stat-card  { padding: 12px !important; }
+            .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+            .modal-box { border-radius: 20px 20px 0 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; padding: 20px 16px !important; }
+            .form-grid { grid-template-columns: 1fr !important; }
+            .form-span-2 { grid-column: 1 !important; }
+            .form-group input, .form-group select, .form-group textarea { font-size: 16px !important; }
+            .admin-table th, .admin-table td { padding: 8px 10px !important; font-size: 12px !important; }
+            .btn-sm { padding: 5px 8px !important; font-size: 11px !important; }
+        }
+    </style>
+</head>
+<body class="admin-layout">
+
+<!-- ── Sidebar overlay (mobile) ─────────────────────── -->
+<div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+<!-- ── Sidebar ─────────────────────────────────────────── -->
+<aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-mob-close">
+        <div class="mob-close-brand">
+            <img src="~/img/BrandLogo.png" alt="DNA" />
+            DNA ADMIN
+        </div>
+        <button id="closeSidebarBtn" aria-label="Close menu"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sidebar-brand">
+        <img src="~/img/BrandLogo.png" alt="DNA Logo" style="width:32px;height:32px;" />
+        <span>DNA ADMIN</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="#" class="nav-item" data-section="products"><i class="fas fa-box"></i> Products</a>
+        <a href="#" class="nav-item" data-section="orders"><i class="fas fa-shopping-bag"></i> Orders</a>
+        <a href="#" class="nav-item" data-section="categories"><i class="fas fa-tags"></i> Categories</a>
+        <a href="#" class="nav-item" data-section="users"><i class="fas fa-users"></i> Users</a>
+        <div style="flex:1"></div>
+        <a href="/Shop" class="nav-item"><i class="fas fa-store"></i> View Shop</a>
+        <button class="nav-item logout" id="adminLogoutBtn" style="cursor:pointer">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </nav>
+</aside>
+
+<!-- ── Mobile top bar (body-level for true full width) ─── -->
+<div class="admin-mobile-bar" id="adminMobileBar">
+    <div class="mob-brand">
+        <img src="~/img/BrandLogo.png" alt="DNA" />
+        DNA ADMIN
+    </div>
+    <button class="btn-hamburger" id="sidebarToggleBtn" aria-label="Open menu">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+
+<!-- ── Main ─────────────────────────────────────────────── -->
+<main class="admin-main">
+
+    <header class="admin-header">
+        <h1 id="sectionTitle" class="header-title">Dashboard Overview</h1>
+        <div class="header-user">
+            <span class="header-user-name" id="adminWelcome">Welcome, Admin</span>
+            <div class="header-avatar">A</div>
+        </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section id="sec-dashboard">
+        <div class="stats-grid">
+            <div class="stat-card"><p class="stat-title">Total Sales</p><h3 id="statSales" class="stat-value">₹0</h3></div>
+            <div class="stat-card blue"><p class="stat-title">Total Orders</p><h3 id="statOrders" class="stat-value">0</h3></div>
+            <div class="stat-card orange"><p class="stat-title">Pending</p><h3 id="statPending" class="stat-value">0</h3></div>
+            <div class="stat-card purple"><p class="stat-title">Products</p><h3 id="statProducts" class="stat-value">0</h3></div>
+        </div>
+        <div class="content-card">
+            <h3 class="card-title">Recent Orders</h3>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead><tr><th>Order ID</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="recentOrdersTable"><tr><td colspan="6" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="sec-products" class="hidden">
+        <div class="section-head">
+            <h2><i class="fas fa-box" style="color:#10b981"></i> Products</h2>
+            <div style="display:flex;gap:10px;align-items:center">
+                <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
+                <button class="btn btn-primary" id="btnAddProduct"><i class="fas fa-plus"></i> Add Product</button>
+            </div>
+        </div>
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+                    <tbody id="productsTable"><tr><td colspan="6" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ORDERS -->
+    <section id="sec-orders" class="hidden">
+        <div class="section-head">
+            <h2><i class="fas fa-shopping-bag" style="color:#3b82f6"></i> Orders</h2>
+            <input type="text" class="search-input" id="orderSearch" placeholder="Search orders...">
+        </div>
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead><tr><th>ID</th><th>Customer</th><th>Email</th><th>Total</th><th>Payment</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="ordersTable"><tr><td colspan="8" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section id="sec-categories" class="hidden">
+        <div class="section-head">
+            <h2><i class="fas fa-tags" style="color:#f59e0b"></i> Product Categories</h2>
+            <div style="display:flex;gap:10px;align-items:center">
+                <input type="text" class="search-input" id="categorySearch" placeholder="Search categories...">
+                <button class="btn btn-primary" onclick="openAddCategory()"><i class="fas fa-plus"></i> Add Category</button>
+            </div>
+        </div>
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead><tr><th>#</th><th>Category Name</th><th>Products</th><th>Actions</th></tr></thead>
+                    <tbody id="categoriesTable"><tr><td colspan="4" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- USERS -->
+    <section id="sec-users" class="hidden">
+        <div class="section-head">
+            <h2><i class="fas fa-users" style="color:#8b5cf6"></i> Users</h2>
+            <input type="text" class="search-input" id="userSearch" placeholder="Search users...">
+        </div>
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                    <tbody id="usersTable"><tr><td colspan="5" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- ── PRODUCT MODAL ─────────────────────────────────────── -->
+<div class="modal-overlay" id="productModal">
+    <div class="modal-box">
+        <h3 class="modal-title"><i class="fas fa-box" style="color:#10b981"></i> <span id="productModalTitle">Add Product</span><button class="modal-close" onclick="closeModal('productModal')">×</button></h3>
+        <form id="productForm" onsubmit="saveProduct(event)">
+            <input type="hidden" id="productId">
+            <div class="form-grid">
+                <div class="form-group form-span-2"><label>Product Name *</label><input type="text" id="pName" required placeholder="e.g. Solar Panel 300W"></div>
+                <div class="form-group"><label>Category *</label><input type="text" id="pCategory" required placeholder="e.g. Solar Panels" list="categoryList"><datalist id="categoryList"></datalist></div>
+                <div class="form-group"><label>Price (₹) *</label><input type="number" id="pPrice" required min="0" step="0.01" placeholder="0.00"></div>
+                <div class="form-group"><label>Original / MRP (₹)</label><input type="number" id="pOriginalPrice" min="0" step="0.01" placeholder="0.00"></div>
+                <div class="form-group"><label>Stock Status</label>
+                    <select id="pInStock"><option value="true">In Stock</option><option value="false">Out of Stock</option></select>
+                </div>
+                <div class="form-group form-span-2"><label>Description</label><textarea id="pDescription" rows="3" placeholder="Product description..."></textarea></div>
+                <div class="form-group form-span-2"><label>Image URL (or upload below)</label><input type="text" id="pImageUrl" placeholder="https://..."></div>
+                <div class="form-group form-span-2">
+                    <label>Upload Image</label>
+                    <input type="file" id="pImageFile" accept="image/*">
+                    <img id="imgPreview" alt="preview">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('productModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="saveProductBtn"><i class="fas fa-save"></i> Save Product</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── ORDER DETAIL MODAL ─────────────────────────────────── -->
+<div class="modal-overlay" id="orderModal">
+    <div class="modal-box" style="max-width:680px">
+        <h3 class="modal-title"><i class="fas fa-receipt" style="color:#3b82f6"></i> Order Details<button class="modal-close" onclick="closeModal('orderModal')">×</button></h3>
+        <div id="orderModalBody"></div>
+        <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end" id="orderModalActions"></div>
+    </div>
+</div>
+
+<!-- ── USER EDIT MODAL ────────────────────────────────────── -->
+<div class="modal-overlay" id="userModal">
+    <div class="modal-box" style="max-width:440px">
+        <h3 class="modal-title"><i class="fas fa-user-edit" style="color:#8b5cf6"></i> Edit User<button class="modal-close" onclick="closeModal('userModal')">×</button></h3>
+        <form id="userForm" onsubmit="saveUser(event)">
+            <input type="hidden" id="editUserId">
+            <div class="form-grid full">
+                <div class="form-group"><label>Name</label><input type="text" id="editUserName"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="editUserEmail"></div>
+                <div class="form-group"><label>Role</label>
+                    <select id="editUserRole"><option value="User">User</option><option value="Admin">Admin</option></select>
+                </div>
+                <div class="form-group"><label>New Password (leave blank to keep)</label><input type="password" id="editUserPassword" placeholder="••••••••"></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── CATEGORY MODAL ───────────────────────────────────── -->
+<div class="modal-overlay" id="categoryModal">
+    <div class="modal-box" style="max-width:400px">
+        <h3 class="modal-title"><i class="fas fa-tag" style="color:#f59e0b"></i> <span id="categoryModalTitle">Add Category</span><button class="modal-close" onclick="closeModal('categoryModal')">×</button></h3>
+        <form id="categoryForm" onsubmit="saveCategory(event)">
+            <input type="hidden" id="editCategoryId">
+            <div class="form-grid full">
+                <div class="form-group">
+                    <label>Category Name *</label>
+                    <input type="text" id="editCategoryName" required placeholder="e.g. Solar Panels">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('categoryModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── CATEGORY BLOCKED MODAL ──────────────────────────── -->
+<div class="modal-overlay" id="catBlockedModal">
+    <div class="modal-box" style="max-width:420px;text-align:center">
+        <div style="font-size:48px;margin-bottom:12px">⚠️</div>
+        <h3 class="modal-title" style="justify-content:center;margin-bottom:12px">Cannot Delete Category</h3>
+        <p id="catBlockedMsg" style="color:#475569;font-size:14px;line-height:1.6;margin-bottom:24px"></p>
+        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;margin-bottom:24px;text-align:left;font-size:13px;color:#92400e">
+            <i class="fas fa-info-circle" style="margin-right:6px"></i>
+            To delete this category, first reassign or delete all its products from the <strong>Products</strong> tab.
+        </div>
+        <button class="btn btn-secondary" style="width:100%" onclick="closeModal('catBlockedModal')">Got it</button>
+    </div>
+</div>
+
+<!-- ── TOAST ─────────────────────────────────────────────── -->
+<div id="adminToast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────
+let allProducts = [], allOrders = [], allUsers = [], allCategories = [];
+
+// ── Toast ──────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+    const t = document.getElementById('adminToast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.className = '', 3200);
+}
+
+// ── Modal helpers ──────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Section navigation ──────────────────────────────────────
+const sections = ['dashboard', 'products', 'orders', 'categories', 'users'];
+const titles   = { dashboard:'Dashboard Overview', products:'Products', orders:'Orders', categories:'Product Categories', users:'Users' };
+
+function showSection(name) {
+    sections.forEach(s => {
+        document.getElementById(`sec-${s}`).classList.toggle('hidden', s !== name);
+    });
+    document.getElementById('sectionTitle').textContent = titles[name] || name;
+    document.querySelectorAll('.nav-item[data-section]').forEach(el =>
+        el.classList.toggle('active', el.dataset.section === name));
+    if (name === 'products')   loadProducts();
+    if (name === 'orders')     loadOrders();
+    if (name === 'categories') loadCategories();
+    if (name === 'users')      loadUsers();
+}
+
+document.querySelectorAll('.nav-item[data-section]').forEach(el =>
+    el.addEventListener('click', e => { e.preventDefault(); showSection(el.dataset.section); }));
+
+// ── Money ──────────────────────────────────────────────────
+const money = v => '₹' + Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// ── DASHBOARD ──────────────────────────────────────────────
+async function loadStats() {
+    try {
+        const [ordRes, prodRes] = await Promise.all([
+            fetch('/api/admin/orders', { credentials: 'include' }),
+            fetch('/api/admin/products', { credentials: 'include' })
+        ]);
+        const orders   = ordRes.ok   ? await ordRes.json()  : [];
+        const products = prodRes.ok  ? await prodRes.json() : [];
+
+        document.getElementById('statOrders').textContent   = orders.length;
+        document.getElementById('statProducts').textContent = products.length;
+        document.getElementById('statSales').textContent    = money(orders.reduce((s, o) => s + (o.total || 0), 0));
+        document.getElementById('statPending').textContent  = orders.filter(o => o.status !== 'Confirmed' && o.status !== 'Cancelled').length;
+
+        const tbody = document.getElementById('recentOrdersTable');
+        if (!orders.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No orders yet.</td></tr>'; return; }
+        tbody.innerHTML = orders.slice(0, 8).map(o => {
+            const cls = o.status === 'Confirmed' ? 'badge-success' : o.status === 'Cancelled' ? 'badge-danger' : 'badge-warning';
+            return `<tr>
+                <td data-label="Order ID" class="strong">#${o.id}</td>
+                <td data-label="Customer">${o.customerName || '-'}</td>
+                <td data-label="Date">${o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : '-'}</td>
+                <td data-label="Total" class="strong">${money(o.total)}</td>
+                <td data-label="Status"><span class="badge ${cls}">${o.status}</span></td>
+                <td data-label="Action"><button class="btn btn-sm btn-secondary" onclick="viewOrder(${o.id})"><i class="fas fa-eye"></i></button></td>
+            </tr>`;
+        }).join('');
+    } catch(e) {
+        console.error('loadStats', e);
+        document.getElementById('recentOrdersTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ef4444">Failed to load data</td></tr>';
+    }
+}
+
+// ── PRODUCTS ───────────────────────────────────────────────
+async function loadProducts() {
+    const tbody = document.getElementById('productsTable');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+    try {
+        const res = await fetch('/api/admin/products', { credentials: 'include' });
+        if (!res.ok) throw new Error(res.status);
+        allProducts = await res.json();
+        renderProducts(allProducts);
+        // sync category datalist from live product categories + stored categories
+        refreshCategoryDatalist();
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#ef4444">Failed to load products: ${e.message}</td></tr>`;
+    }
+}
+
+// Rebuild the datalist used in the product form from allCategories + any extra from allProducts
+function refreshCategoryDatalist() {
+    const cats = new Set([
+        ...allCategories.map(c => c.name),
+        ...allProducts.map(p => p.category).filter(Boolean)
+    ]);
+    document.getElementById('categoryList').innerHTML =
+        [...cats].sort().map(c => `<option value="${c}">`).join('');
+}
+
+function renderProducts(list) {
+    const tbody = document.getElementById('productsTable');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-box-open"></i>No products found.</div></td></tr>'; return; }
+    tbody.innerHTML = list.map(p => `
+        <tr>
+            <td data-label=""><img src="${p.imageUrl || 'https://via.placeholder.com/48?text=No+Img'}" class="prod-img" onerror="this.src='https://via.placeholder.com/48?text=No+Img'"></td>
+            <td data-label="Name" class="strong">${p.name}</td>
+            <td data-label="Category">${p.category || '-'}</td>
+            <td data-label="Price" class="strong">${money(p.price)}</td>
+            <td data-label="Stock"><span class="badge ${p.inStock ? 'badge-success' : 'badge-danger'}">${p.inStock ? 'In Stock' : 'Out of Stock'}</span></td>
+            <td data-label="Actions"><div class="action-btns">
+                <button class="btn btn-sm btn-secondary" onclick="editProduct(${p.productId})"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.productId}, '${p.name.replace(/'/g,"\\'")}')"><i class="fas fa-trash"></i></button>
+            </div></td>
+        </tr>`).join('');
+}
+
+// Search
+document.getElementById('productSearch').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    renderProducts(allProducts.filter(p => p.name.toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q)));
+});
+
+// Add Product button
+document.getElementById('btnAddProduct').addEventListener('click', () => {
+    document.getElementById('productModalTitle').textContent = 'Add Product';
+    document.getElementById('productForm').reset();
+    document.getElementById('productId').value = '';
+    document.getElementById('imgPreview').style.display = 'none';
+    openModal('productModal');
+});
+
+// Image preview
+document.getElementById('pImageFile').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = document.getElementById('imgPreview');
+        img.src = ev.target.result;
+        img.style.display = 'block';
+        document.getElementById('pImageUrl').value = '';
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('pImageUrl').addEventListener('input', e => {
+    const img = document.getElementById('imgPreview');
+    if (e.target.value) { img.src = e.target.value; img.style.display = 'block'; }
+    else img.style.display = 'none';
+});
+
+function editProduct(id) {
+    const p = allProducts.find(x => x.productId === id);
+    if (!p) return;
+    document.getElementById('productModalTitle').textContent = 'Edit Product';
+    document.getElementById('productId').value = p.productId;
+    document.getElementById('pName').value = p.name;
+    document.getElementById('pCategory').value = p.category || '';
+    document.getElementById('pPrice').value = p.price;
+    document.getElementById('pOriginalPrice').value = p.originalPrice || '';
+    document.getElementById('pInStock').value = p.inStock ? 'true' : 'false';
+    document.getElementById('pDescription').value = p.description || '';
+    document.getElementById('pImageUrl').value = p.imageUrl || '';
+    const img = document.getElementById('imgPreview');
+    if (p.imageUrl) { img.src = p.imageUrl; img.style.display = 'block'; } else img.style.display = 'none';
+    document.getElementById('pImageFile').value = '';
+    openModal('productModal');
+}
+
+async function saveProduct(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveProductBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    const id = document.getElementById('productId').value;
+    const fileInput = document.getElementById('pImageFile');
+    const hasFile = fileInput.files.length > 0;
+
+    try {
+        let res;
+        if (hasFile) {
+            // multipart upload
+            const fd = new FormData();
+            fd.append('name',          document.getElementById('pName').value);
+            fd.append('category',      document.getElementById('pCategory').value);
+            fd.append('price',         document.getElementById('pPrice').value);
+            fd.append('originalPrice', document.getElementById('pOriginalPrice').value || '');
+            fd.append('description',   document.getElementById('pDescription').value);
+            fd.append('imageUrl',      document.getElementById('pImageUrl').value || '');
+            fd.append('inStock',       document.getElementById('pInStock').value);
+            fd.append('image',         fileInput.files[0]);
+
+            if (id) {
+                // edit with file: upload image first, then PUT JSON
+                const upRes = await fetch('/api/admin/upload', { method:'POST', body: fd, credentials:'include' });
+                const upData = await upRes.json();
+                res = await fetch(`/api/admin/products/${id}`, {
+                    method:'PUT', credentials:'include',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        name: document.getElementById('pName').value,
+                        category: document.getElementById('pCategory').value,
+                        price: parseFloat(document.getElementById('pPrice').value),
+                        originalPrice: parseFloat(document.getElementById('pOriginalPrice').value) || null,
+                        description: document.getElementById('pDescription').value,
+                        imageUrl: upData.url,
+                        inStock: document.getElementById('pInStock').value === 'true'
+                    })
+                });
+            } else {
+                res = await fetch('/api/admin/products', { method:'POST', body: fd, credentials:'include' });
+            }
+        } else {
+            const payload = {
+                name:          document.getElementById('pName').value,
+                category:      document.getElementById('pCategory').value,
+                price:         parseFloat(document.getElementById('pPrice').value),
+                originalPrice: parseFloat(document.getElementById('pOriginalPrice').value) || null,
+                description:   document.getElementById('pDescription').value,
+                imageUrl:      document.getElementById('pImageUrl').value || 'https://via.placeholder.com/500?text=No+Image',
+                inStock:       document.getElementById('pInStock').value === 'true'
+            };
+            if (id) {
+                res = await fetch(`/api/admin/products/${id}`, { method:'PUT', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+            } else {
+                res = await fetch('/api/admin/products', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+            }
+        }
+
+        if (!res.ok) { const t = await res.text(); throw new Error(t || res.status); }
+        closeModal('productModal');
+        toast(id ? 'Product updated!' : 'Product added!', 'success');
+        localStorage.setItem('product-updated', String(Date.now()));
+        await loadProducts();
+    } catch(err) {
+        toast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save Product';
+    }
+}
+
+async function deleteProduct(id, name) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    try {
+        const res = await fetch(`/api/admin/products/${id}`, { method:'DELETE', credentials:'include' });
+        if (!res.ok) throw new Error(await res.text());
+        toast('Product deleted.', 'success');
+        localStorage.setItem('product-updated', String(Date.now()));
+        await loadProducts();
+    } catch(e) { toast('Delete failed: ' + e.message, 'error'); }
+}
+
+// ── CATEGORIES ────────────────────────────────────────────
+async function loadCategories() {
+    const tbody = document.getElementById('categoriesTable');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+    try {
+        const res = await fetch('/api/admin/categories', { credentials: 'include' });
+        if (!res.ok) throw new Error(res.status);
+        allCategories = await res.json();
+        // also ensure products are loaded so we can show product counts
+        if (!allProducts.length) {
+            const pr = await fetch('/api/admin/products', { credentials: 'include' });
+            if (pr.ok) allProducts = await pr.json();
+        }
+        renderCategories(allCategories);
+        refreshCategoryDatalist();
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#ef4444">Failed: ${e.message}</td></tr>`;
+    }
+}
+
+function renderCategories(list) {
+    const tbody = document.getElementById('categoriesTable');
+    if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><i class="fas fa-tags"></i>No categories yet.</div></td></tr>';
+        return;
+    }
+    tbody.innerHTML = list.map((c, i) => {
+        const prodCount = allProducts.filter(p => (p.category||'').toLowerCase() === c.name.toLowerCase()).length;
+        return `<tr>
+            <td data-label="#">${i + 1}</td>
+            <td data-label="Category" class="strong">${c.name}</td>
+            <td data-label="Products">
+                <span class="badge ${prodCount > 0 ? 'badge-success' : 'badge-default'}">${prodCount} product${prodCount !== 1 ? 's' : ''}</span>
+            </td>
+            <td data-label="Actions"><div class="action-btns">
+                <button class="btn btn-sm btn-secondary" onclick="editCategory(${c.categoryId}, '${c.name.replace(/'/g,"\\'")}')"><i class="fas fa-edit"></i> Rename</button>
+                <button class="btn btn-sm btn-danger" onclick="tryDeleteCategory(${c.categoryId},'${c.name.replace(/'/g,"\\'")}',${prodCount})"><i class="fas fa-trash"></i></button>
+            </div></td>
+        </tr>`;
+    }).join('');
+}
+
+document.getElementById('categorySearch').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    renderCategories(allCategories.filter(c => c.name.toLowerCase().includes(q)));
+});
+
+function openAddCategory() {
+    document.getElementById('categoryModalTitle').textContent = 'Add Category';
+    document.getElementById('categoryForm').reset();
+    document.getElementById('editCategoryId').value = '';
+    openModal('categoryModal');
+}
+
+function editCategory(id, name) {
+    document.getElementById('categoryModalTitle').textContent = 'Rename Category';
+    document.getElementById('editCategoryId').value = id;
+    document.getElementById('editCategoryName').value = name;
+    openModal('categoryModal');
+}
+
+async function saveCategory(e) {
+    e.preventDefault();
+    const id   = document.getElementById('editCategoryId').value;
+    const name = document.getElementById('editCategoryName').value.trim();
+    if (!name) return;
+    try {
+        const url    = id ? `/api/admin/categories/${id}` : '/api/admin/categories';
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+            method, credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        if (!res.ok) {
+            const msg = await res.text();
+            throw new Error(msg || res.status);
+        }
+        closeModal('categoryModal');
+        toast(id ? 'Category renamed!' : 'Category added!', 'success');
+        await loadCategories();
+        // keep product table datalist + cached products in sync
+        await loadProducts();
+    } catch(err) { toast('Error: ' + err.message, 'error'); }
+}
+
+function tryDeleteCategory(id, name, prodCount) {
+    if (prodCount > 0) {
+        document.getElementById('catBlockedMsg').innerHTML =
+            `<strong>"${name}"</strong> cannot be deleted because it has <strong>${prodCount} product${prodCount !== 1 ? 's' : ''}</strong> assigned to it.`;
+        openModal('catBlockedModal');
+        return;
+    }
+    deleteCategory(id, name);
+}
+
+async function deleteCategory(id, name) {
+    if (!confirm(`Delete category "${name}"? This cannot be undone.`)) return;
+    try {
+        const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE', credentials: 'include' });
+        if (!res.ok) throw new Error(await res.text());
+        toast('Category deleted.', 'success');
+        await loadCategories();
+        refreshCategoryDatalist();
+    } catch(e) { toast('Delete failed: ' + e.message, 'error'); }
+}
+
+// ── ORDERS ────────────────────────────────────────────────
+async function loadOrders() {
+    const tbody = document.getElementById('ordersTable');
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+    try {
+        const res = await fetch('/api/admin/orders', { credentials: 'include' });
+        if (!res.ok) throw new Error(res.status);
+        allOrders = await res.json();
+        renderOrders(allOrders);
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#ef4444">Failed: ${e.message}</td></tr>`;
+    }
+}
+
+function renderOrders(list) {
+    const tbody = document.getElementById('ordersTable');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><i class="fas fa-shopping-bag"></i>No orders yet.</div></td></tr>'; return; }
+    tbody.innerHTML = list.map(o => {
+        const cls = o.status === 'Confirmed' ? 'badge-success' : o.status === 'Cancelled' ? 'badge-danger' : 'badge-warning';
+        return `<tr>
+            <td data-label="ID" class="strong">#${o.id}</td>
+            <td data-label="Customer">${o.customerName || '-'}</td>
+            <td data-label="Email" style="font-size:13px">${o.customerEmail || '-'}</td>
+            <td data-label="Total" class="strong">${money(o.total)}</td>
+            <td data-label="Payment"><span class="badge badge-default">${o.paymentMethod || '-'}</span></td>
+            <td data-label="Date" style="font-size:13px">${o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : '-'}</td>
+            <td data-label="Status"><span class="badge ${cls}">${o.status}</span></td>
+            <td data-label="Actions"><div class="action-btns">
+                <button class="btn btn-sm btn-secondary" onclick="viewOrder(${o.id})"><i class="fas fa-eye"></i> View</button>
+                ${o.status !== 'Confirmed' && o.status !== 'Cancelled'
+                    ? `<button class="btn btn-sm btn-primary" onclick="confirmOrder(${o.id})"><i class="fas fa-check"></i> Confirm</button>`
+                    : ''}
+            </div></td>
+        </tr>`;
+    }).join('');
+}
+
+document.getElementById('orderSearch').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    renderOrders(allOrders.filter(o =>
+        String(o.id).includes(q) ||
+        (o.customerName||'').toLowerCase().includes(q) ||
+        (o.customerEmail||'').toLowerCase().includes(q)));
+});
+
+async function viewOrder(id) {
+    const o = allOrders.find(x => x.id === id);
+    if (!o) return;
+
+    let itemsHtml = '';
+    try {
+        const items = typeof o.itemsJson === 'string' ? JSON.parse(o.itemsJson) : (o.itemsJson || []);
+        if (items.length) {
+            itemsHtml = `<table class="order-items-mini" style="margin-top:8px">
+                <thead><tr><th>Product ID</th><th>Qty</th></tr></thead>
+                <tbody>${items.map(i => `<tr><td>#${i.productId}</td><td>${i.quantity}</td></tr>`).join('')}</tbody>
+            </table>`;
+        }
+    } catch { /* ignore */ }
+
+    const cls = o.status === 'Confirmed' ? 'badge-success' : o.status === 'Cancelled' ? 'badge-danger' : 'badge-warning';
+    document.getElementById('orderModalBody').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+            <div><label style="font-size:12px;color:#64748b;font-weight:600">ORDER ID</label><div class="strong">#${o.id}</div></div>
+            <div><label style="font-size:12px;color:#64748b;font-weight:600">STATUS</label><div><span class="badge ${cls}">${o.status}</span></div></div>
+            <div><label style="font-size:12px;color:#64748b;font-weight:600">CUSTOMER</label><div>${o.customerName || '-'}</div></div>
+            <div><label style="font-size:12px;color:#64748b;font-weight:600">EMAIL</label><div style="font-size:13px">${o.customerEmail || '-'}</div></div>
+            <div><label style="font-size:12px;color:#64748b;font-weight:600">PHONE</label><div>${o.customerPhone || '-'}</div></div>
+            <div><label style="font-size:12px;color:#64748b;font-weight:600">PAYMENT</label><div>${o.paymentMethod || '-'}</div></div>
+            <div><label style="font-size:12px;color:#64748b;font-weight:600">TOTAL</label><div class="strong" style="font-size:18px;color:#10b981">${money(o.total)}</div></div>
+            <div><label style="font-size:12px;color:#64748b;font-weight:600">DATE</label><div>${o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN') : '-'}</div></div>
+            <div style="grid-column:span 2"><label style="font-size:12px;color:#64748b;font-weight:600">ADDRESS</label><div>${o.customerAddress || '-'}</div></div>
+        </div>
+        <div><label style="font-size:12px;color:#64748b;font-weight:600">ITEMS</label>${itemsHtml || '<div style="color:#94a3b8;font-size:13px">No items data</div>'}</div>`;
+
+    const actDiv = document.getElementById('orderModalActions');
+    actDiv.innerHTML = '';
+    if (o.status !== 'Confirmed' && o.status !== 'Cancelled') {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.innerHTML = '<i class="fas fa-check"></i> Confirm Order';
+        btn.onclick = async () => { await confirmOrder(o.id); closeModal('orderModal'); };
+        actDiv.appendChild(btn);
+    }
+    const close = document.createElement('button');
+    close.className = 'btn btn-secondary'; close.textContent = 'Close';
+    close.onclick = () => closeModal('orderModal');
+    actDiv.appendChild(close);
+
+    openModal('orderModal');
+}
+
+async function confirmOrder(id) {
+    try {
+        const res = await fetch(`/api/admin/orders/${id}/confirm`, { method:'POST', credentials:'include' });
+        if (!res.ok) throw new Error(await res.text());
+        toast(`Order #${id} confirmed & email sent!`, 'success');
+        await loadOrders();
+        // also refresh dashboard stat
+        loadStats();
+    } catch(e) { toast('Confirm failed: ' + e.message, 'error'); }
+}
+
+// ── USERS ─────────────────────────────────────────────────
+async function loadUsers() {
+    const tbody = document.getElementById('usersTable');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+    try {
+        const res = await fetch('/api/admin/users', { credentials: 'include' });
+        if (!res.ok) throw new Error(res.status);
+        allUsers = await res.json();
+        renderUsers(allUsers);
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#ef4444">Failed: ${e.message}</td></tr>`;
+    }
+}
+
+function renderUsers(list) {
+    const tbody = document.getElementById('usersTable');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><i class="fas fa-users"></i>No users.</div></td></tr>'; return; }
+    tbody.innerHTML = list.map(u => `
+        <tr>
+            <td data-label="ID">${u.id}</td>
+            <td data-label="Name" class="strong">${u.name || '-'}</td>
+            <td data-label="Email">${u.email}</td>
+            <td data-label="Role"><span class="badge ${u.role === 'Admin' ? 'badge-success' : 'badge-default'}">${u.role}</span></td>
+            <td data-label="Actions"><button class="btn btn-sm btn-secondary" onclick="editUser(${u.id})"><i class="fas fa-user-edit"></i> Edit</button></td>
+        </tr>`).join('');
+}
+
+document.getElementById('userSearch').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    renderUsers(allUsers.filter(u => (u.name||'').toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
+});
+
+function editUser(id) {
+    const u = allUsers.find(x => x.id === id);
+    if (!u) return;
+    document.getElementById('editUserId').value = u.id;
+    document.getElementById('editUserName').value = u.name || '';
+    document.getElementById('editUserEmail').value = u.email;
+    document.getElementById('editUserRole').value = u.role || 'User';
+    document.getElementById('editUserPassword').value = '';
+    openModal('userModal');
+}
+
+async function saveUser(e) {
+    e.preventDefault();
+    const id = document.getElementById('editUserId').value;
+    const payload = {
+        name:     document.getElementById('editUserName').value,
+        email:    document.getElementById('editUserEmail').value,
+        role:     document.getElementById('editUserRole').value,
+        password: document.getElementById('editUserPassword').value || null
+    };
+    try {
+        const res = await fetch(`/api/admin/users/${id}`, { method:'PUT', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error(await res.text());
+        closeModal('userModal');
+        toast('User updated!', 'success');
+        await loadUsers();
+    } catch(err) { toast('Error: ' + err.message, 'error'); }
+}
+
+// ── Mobile sidebar toggle ──────────────────────────────
+(function () {
+    var sidebar  = document.getElementById('adminSidebar');
+    var overlay  = document.getElementById('adminSidebarOverlay');
+    var toggleBtn = document.getElementById('sidebarToggleBtn');
+    var closeBtn  = document.getElementById('closeSidebarBtn');
+
+    function openSidebar() {
+        sidebar.classList.add('is-open');
+        overlay.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+    if (closeBtn)  closeBtn.addEventListener('click', closeSidebar);
+    if (overlay)   overlay.addEventListener('click', closeSidebar);
+
+    // Close sidebar when a nav-item is clicked on mobile
+    document.querySelectorAll('.nav-item[data-section]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            if (window.innerWidth <= 900) closeSidebar();
+        });
+    });
+}());
+
+// ── Logout ─────────────────────────────────────────────────
+document.getElementById('adminLogoutBtn').addEventListener('click', async () => {
+    try { await fetch('/api/users/logout', { method:'POST', credentials:'include' }); } catch {}
+    try { localStorage.clear(); } catch {}
+    window.location.href = '/Shop';
+});
+
+// ── Overlay close ──────────────────────────────────────────
+document.querySelectorAll('.modal-overlay').forEach(el =>
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); }));
+
+// ── Init ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    loadStats();
+    // pre-load categories so the product-form datalist is ready immediately
+    fetch('/api/admin/categories', { credentials: 'include' })
+        .then(r => r.ok ? r.json() : [])
+        .then(cats => { allCategories = cats; refreshCategoryDatalist(); })
+        .catch(() => {});
+});
+</script>
+</body>
+</html>
