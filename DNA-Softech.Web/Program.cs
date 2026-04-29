@@ -4,12 +4,9 @@ using DNASoftech.Domain.Models.ECommerce;
 using Microsoft.AspNetCore.DataProtection;
 using DNASoftech.Infrastructure;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Builder
-// ─────────────────────────────────────────────────────────────────────────────
 var builder = WebApplication.CreateBuilder(args);
 
-// Data Protection — persist keys so auth cookies survive restarts
+// Data Protection
 try
 {
     builder.Services.AddDataProtection()
@@ -19,27 +16,24 @@ try
 }
 catch
 {
-    // Fallback when FileSystem key persistence is unavailable (e.g. read-only containers)
     builder.Services.AddDataProtection()
         .SetApplicationName("DNASoftechApp");
 }
 
-// ── MVC (Controllers + Razor Views) ─────────────────────────────────────────
+// MVC
 builder.Services.AddControllersWithViews();
 
-// ── In-memory cache (used for OTP storage) ──────────────────────────────────
+// Caching
 builder.Services.AddMemoryCache();
 
-// ── Infrastructure registrations (DbContext, repositories, external services) ─
+// Infrastructure
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// ── Application services ─────────────────────────────────────────────────────
+// Application Services
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
-// ── Cookie authentication ────────────────────────────────────────────────────
-// Using a simple, custom cookie scheme — no ASP.NET Identity dependency.
-// Login page is the Razor view at /Account/Login (not a static HTML file).
+// Authentication
 builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>
     {
@@ -50,21 +44,16 @@ builder.Services.AddAuthentication("CookieAuth")
         options.Cookie.Path = "/";
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
         options.SlidingExpiration = true;
-        // Unauthenticated requests to [Authorize] endpoints redirect here
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/Login";
     });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// App pipeline
-// ─────────────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-// Auto-apply pending migrations and seed data on startup.
+// Apply migrations
 app.ApplyInfrastructureMigrations();
 
-// Always use a clean JSON error handler
-// Full exception details are written to the server log only.
+// Global exception handler
 app.UseExceptionHandler(errApp =>
 {
     errApp.Run(async ctx =>
@@ -72,20 +61,25 @@ app.UseExceptionHandler(errApp =>
         var feature = ctx.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
         var ex = feature?.Error;
         var logger = ctx.RequestServices.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Unhandled exception for {Method} {Path}", ctx.Request.Method, ctx.Request.Path);
+
+        logger.LogError(ex, "Unhandled exception for {Method} {Path}",
+            ctx.Request.Method, ctx.Request.Path);
 
         ctx.Response.StatusCode = ex is InvalidOperationException or System.Data.Common.DbException ? 503 : 500;
         ctx.Response.ContentType = "application/json";
+
         var msg = ctx.Response.StatusCode == 503
             ? "Database is temporarily unavailable. Please try again in a moment."
             : "An unexpected server error occurred.";
+
         await ctx.Response.WriteAsJsonAsync(new { error = msg });
     });
 });
 
-// HTTPS redirection
+// HTTPS
 var httpsPortEnv = Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORT")
                    ?? Environment.GetEnvironmentVariable("HTTPS_PORT");
+
 if (!string.IsNullOrEmpty(httpsPortEnv) || app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
@@ -93,26 +87,22 @@ if (!string.IsNullOrEmpty(httpsPortEnv) || app.Environment.IsDevelopment())
 else
 {
     app.Services.GetRequiredService<ILogger<Program>>()
-       .LogWarning("Skipping HTTPS redirection — no HTTPS port configured.");
+        .LogWarning("Skipping HTTPS redirection — no HTTPS port configured.");
 }
 
-// Serve default files like index.html from wwwroot
+// Static files
 app.UseDefaultFiles();
-
-// Serve wwwroot/ (css, js, images, lib)
 app.UseStaticFiles();
 
+// Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ── MVC default route ────────────────────────────────────────────────────────
-// Handles all page requests: /Shop, /Checkout, /Admin, /Account/Login, etc.
+// Routes
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// ── API controllers ───────────────────────────────────────────────────────────
-// Keep the existing JSON API routes: /api/products, /api/orders, /api/admin/*, etc.
 app.MapControllers();
 
 app.Run();
