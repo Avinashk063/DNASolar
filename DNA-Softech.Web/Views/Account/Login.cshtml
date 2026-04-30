@@ -144,8 +144,8 @@
                 if (res.ok) {
                     const user = await res.json();
                     localStorage.setItem('currentUser', JSON.stringify(user));
-                    // Redirect to home or return URL
-                    window.location.href = '@ViewData["ReturnUrl"]' || '/';
+                    // Redirect to shop page
+                    window.location.href = '/Shop';
                 } else {
                     const msg = await res.text();
                     err.textContent = msg || 'Invalid email or password';

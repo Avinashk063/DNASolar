@@ -267,7 +267,7 @@ loadFromLocalStorage();
 // Attach critical header button listeners immediately so they work before async init() completes
 document.addEventListener('DOMContentLoaded', () => {
     const userBtn = document.getElementById('userBtn');
-    if (userBtn) userBtn.addEventListener('click', () => openUserModal());
+    if (userBtn) userBtn.addEventListener('click', () => navigateToAccount());
     const cartToggle = document.getElementById('cartToggle');
     if (cartToggle) cartToggle.addEventListener('click', () => toggleCart());
     const wishlistBtn = document.getElementById('wishlistBtn');
@@ -1279,231 +1279,14 @@ function openCheckout() {
 
 function closeCheckout() { /* no-op — checkout is now a dedicated page */ }
 
-// ===== USER AUTH =====
-function openUserModal() {
-    const modal = document.getElementById('userModal');
-    const overlay = document.getElementById('overlay');
-
-    // If state was cleared by a transient error, restore from localStorage
-    if (!state.currentUser) {
-        try {
-            const stored = localStorage.getItem('currentUser');
-            if (stored) state.currentUser = JSON.parse(stored);
-        } catch { /* ignore */ }
-    }
-
-    // show profile if logged in
+// ===== ACCOUNT NAVIGATION =====
+function navigateToAccount() {
     if (state.currentUser) {
-        document.getElementById('userProfile').classList.remove('hidden');
-        document.getElementById('authForms').classList.add('hidden');
-        document.getElementById('profileName').textContent = state.currentUser.name || '';
-        document.getElementById('profileEmail').textContent = state.currentUser.email || '';
-        // Also update the large avatar initial
-        const avatarLg = document.getElementById('profileAvatar');
-        if (avatarLg && state.currentUser.name) avatarLg.textContent = state.currentUser.name.charAt(0).toUpperCase();
-        // Make sure edit form is hidden on open
-        const editSection = document.getElementById('profileEditSection');
-        const viewSection = document.getElementById('profileViewSection');
-        if (editSection) editSection.classList.add('hidden');
-        if (viewSection) viewSection.classList.remove('hidden');
-    } else {
-        document.getElementById('userProfile').classList.add('hidden');
-        document.getElementById('authForms').classList.remove('hidden');
-        switchAuthTab('login');
-    }
-    modal.classList.add('open');
-    overlay.classList.add('active');
-}
-
-function closeUserModal() {
-    document.getElementById('userModal').classList.remove('open');
-    document.getElementById('overlay').classList.remove('active');
-}
-
-function switchAuthTab(tab) {
-    const login = document.getElementById('loginForm');
-    const register = document.getElementById('registerForm');
-    const sLogin = document.getElementById('showLogin');
-    const sReg = document.getElementById('showRegister');
-    if (tab === 'login') {
-        _resetOtpUi();
-        login.classList.remove('hidden');
-        register.classList.add('hidden');
-        sLogin.classList.add('active');
-        sReg.classList.remove('active');
-    } else {
-        login.classList.add('hidden');
-        register.classList.remove('hidden');
-        sLogin.classList.remove('active');
-        sReg.classList.add('active');
-    }
-}
-
-// ── OTP registration state ──────────────────────────────────────
-let _regOtpSent = false;
-let _regOtpTimerInterval = null;
-let _regPendingName = '', _regPendingEmail = '', _regPendingPassword = '';
-
-function _startOtpCountdown() {
-    clearInterval(_regOtpTimerInterval);
-    const timerEl = document.getElementById('otpTimer');
-    const resendBtn = document.getElementById('resendOtpBtn');
-    let secs = 10 * 60;
-    if (timerEl) timerEl.textContent = '10:00';
-    if (resendBtn) resendBtn.style.display = 'none';
-    _regOtpTimerInterval = setInterval(() => {
-        secs--;
-        if (timerEl) {
-            const m = String(Math.floor(secs / 60)).padStart(2, '0');
-            const s = String(secs % 60).padStart(2, '0');
-            timerEl.textContent = `${m}:${s}`;
-        }
-        if (secs <= 0) {
-            clearInterval(_regOtpTimerInterval);
-            if (timerEl) timerEl.textContent = '00:00';
-            if (resendBtn) resendBtn.style.display = 'inline-block';
-        }
-    }, 1000);
-}
-
-function _resetOtpUi() {
-    _regOtpSent = false;
-    clearInterval(_regOtpTimerInterval);
-    _regPendingName = ''; _regPendingEmail = ''; _regPendingPassword = '';
-    const otpSection = document.getElementById('otpSection');
-    const regStep1 = document.getElementById('regStep1');
-    const submitBtn = document.getElementById('registerSubmitBtn');
-    const otpInput = document.getElementById('otpInput');
-    if (otpSection) otpSection.style.display = 'none';
-    if (regStep1) regStep1.style.display = '';
-    if (submitBtn) submitBtn.innerHTML = 'Send Verification Code <i class="fas fa-envelope"></i>';
-    if (otpInput) otpInput.value = '';
-}
-
-async function sendRegistrationOtp(name, email, password) {
-    if (!name || !email || !password) {
-        showToast('Please fill all fields', 'error');
-        return;
-    }
-    const submitBtn = document.getElementById('registerSubmitBtn');
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...'; }
-    try {
-        const res = await fetch(`${apiBase}/api/users/send-registration-otp`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
-            credentials: 'include'
-        });
-        if (!res.ok) {
-            let msg = 'Could not send OTP';
-            try { const j = await res.json(); msg = j.error || msg; } catch { }
-            throw new Error(msg);
-        }
-        _regPendingName = name; _regPendingEmail = email; _regPendingPassword = password;
-        _regOtpSent = true;
-        const regStep1 = document.getElementById('regStep1');
-        const otpSection = document.getElementById('otpSection');
-        if (regStep1) regStep1.style.display = 'none';
-        if (otpSection) otpSection.style.display = '';
-        if (submitBtn) submitBtn.innerHTML = 'Create Account <i class="fas fa-user-plus"></i>';
-        _startOtpCountdown();
-        showToast(`OTP sent to ${email}`, 'success');
-    } catch (err) {
-        showToast(err.message || 'Failed to send OTP', 'error');
-    } finally {
-        if (submitBtn) submitBtn.disabled = false;
-    }
-}
-
-async function registerUser(name, email, password) {
-    if (!name || !email || !password) {
-        showToast('Please fill all fields', 'error');
+        window.location.href = '/Account/EditProfile';
         return;
     }
 
-    const otp = document.getElementById('otpInput')?.value?.trim();
-    if (!otp) { showToast('Please enter the OTP', 'error'); return; }
-    const submitBtn = document.getElementById('registerSubmitBtn');
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...'; }
-    try {
-        const res = await fetch(`${apiBase}/api/users/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, otp }),
-            credentials: 'include'
-        });
-
-        if (!res.ok) {
-            let msg = 'Failed to register';
-            try {
-                const txt = await res.clone().text();
-                try { const j = JSON.parse(txt); msg = j.error || txt || msg; } catch { msg = txt || msg; }
-            } catch { /* keep default */ }
-            throw new Error(msg);
-        }
-
-        let user;
-        try { user = await res.json(); } catch { throw new Error('Invalid server response during registration'); }
-        state.currentUser = { id: user.id, name: user.name, email: user.email, isAdmin: false };
-        saveToLocalStorage();
-        refreshAuthUI();
-        _resetOtpUi();
-        showToast('Account created successfully!', 'success');
-        openUserModal();
-    } catch (err) {
-        console.error(err);
-        showToast(err.message || 'Registration failed', 'error');
-    } finally {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = 'Create Account <i class="fas fa-user-plus"></i>'; }
-    }
-}
-
-async function loginUser(email, password) {
-    if (!email || !password) {
-        showToast('Please provide email and password', 'error');
-        return;
-    }
-
-    try {
-        const res = await fetch(`${apiBase}/api/users/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-            credentials: 'include'
-        });
-
-        if (!res.ok) {
-            let msg = 'Login failed';
-            try {
-                const txt = await res.clone().text();
-                try { const j = JSON.parse(txt); msg = j.error || txt || msg; } catch { msg = txt || msg; }
-            } catch { /* keep default */ }
-            throw new Error(msg);
-        }
-
-        let user;
-        try { user = await res.json(); } catch { throw new Error('Invalid server response during login'); }
-        state.currentUser = { id: user.id, name: user.name, email: user.email, isAdmin: false };
-        saveToLocalStorage();
-        refreshAuthUI();
-
-        // Immediately re-read current user/admin state from server so Admin button
-        // appears right away for admin users.
-        await loadCurrentUser();
-
-        showToast('Logged in', 'success');
-        openUserModal();
-    } catch (err) {
-        console.error(err);
-        showToast(err.message || 'Login failed', 'error');
-    }
-}
-
-async function logoutUser() {
-    await logoutEverything();
-    saveToLocalStorage();
-    refreshAuthUI();
-    showToast('Logged out', 'success');
+    window.location.href = '/Account/Login';
 }
 
 // placeOrder is now handled by Views/Shop/Checkout.cshtml
@@ -1666,32 +1449,6 @@ function initializeEventListeners() {
 
     // Wishlist
     document.getElementById('closeWishlist')?.addEventListener('click', toggleWishlistPanel);
-
-    // User / Auth
-    document.getElementById('closeUserModal')?.addEventListener('click', closeUserModal);
-    document.getElementById('showLogin')?.addEventListener('click', () => switchAuthTab('login'));
-    document.getElementById('showRegister')?.addEventListener('click', () => switchAuthTab('register'));
-    document.getElementById('loginForm')?.addEventListener('submit', e => {
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        loginUser(fd.get('email'), fd.get('password'));
-    });
-    document.getElementById('registerForm')?.addEventListener('submit', e => {
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        if (!_regOtpSent) {
-            sendRegistrationOtp(fd.get('name'), fd.get('email'), fd.get('password'));
-        } else {
-            registerUser(_regPendingName, _regPendingEmail, _regPendingPassword);
-        }
-    });
-    document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
-        sendRegistrationOtp(_regPendingName, _regPendingEmail, _regPendingPassword);
-    });
-    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-        await logoutUser();
-        closeUserModal();
-    });
 
     // Product modal
     document.getElementById('closeProductModal')?.addEventListener('click', closeProductModal);

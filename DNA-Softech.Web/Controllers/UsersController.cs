@@ -125,11 +125,21 @@ namespace DNASoftech.Web.Controllers
 
                 var user = new AppUser
                 {
-                    Name = dto.Name,
+                    Name = dto.Name.Trim(),
                     Email = email,
                     PasswordHash = HashPassword(dto.Password),
-                    Role = "User"
+                    Role = "User",
+                    Mobile = string.IsNullOrWhiteSpace(dto.Mobile) ? null : dto.Mobile.Trim(),
+                    AddressLine1 = string.IsNullOrWhiteSpace(dto.AddressLine1) ? null : dto.AddressLine1.Trim(),
+                    City = string.IsNullOrWhiteSpace(dto.City) ? null : dto.City.Trim(),
+                    State = string.IsNullOrWhiteSpace(dto.State) ? null : dto.State.Trim(),
+                    Zip = string.IsNullOrWhiteSpace(dto.Zip) ? null : dto.Zip.Trim()
                 };
+
+                if (!string.IsNullOrWhiteSpace(dto.AddressLine1))
+                {
+                    user.Address = dto.AddressLine1.Trim();
+                }
 
                 _db.AppUsers.Add(user);
                 await _db.SaveChangesAsync();
@@ -371,7 +381,16 @@ namespace DNASoftech.Web.Controllers
     }
 
     // DTOs
-    public record RegisterDto(string Name, string Email, string Password, string? Otp);
+    public record RegisterDto(
+        string Name,
+        string Email,
+        string Password,
+        string? Otp,
+        string? Mobile,
+        string? AddressLine1,
+        string? City,
+        string? State,
+        string? Zip);
     public record SendOtpDto(string Email);
     public record UpdateProfileDto(
         string? Name, string? Mobile, string? Address,

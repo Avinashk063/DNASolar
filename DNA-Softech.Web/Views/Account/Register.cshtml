@@ -1,0 +1,288 @@
+@{
+    ViewData["Title"] = "Create Account — DNA SOFTECH";
+}
+
+@section Styles {
+    <style>
+        .register-wrap {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .register-card {
+            width: 100%;
+            max-width: 520px;
+            padding: 48px 40px;
+            animation: fadeUp 0.6s ease-out;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-header img {
+            width: 64px;
+            margin: 0 auto 16px;
+        }
+
+        .register-header h2 {
+            font-size: 1.75rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .register-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .auth-error {
+            background: #fef2f2;
+            color: #ef4444;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid #fca5a5;
+            display: none;
+        }
+
+        .otp-section {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .otp-note {
+            background: #ecfdf3;
+            color: #047857;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid #a7f3d0;
+            margin-bottom: 16px;
+        }
+
+        .register-footer {
+            margin-top: 26px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .register-footer a {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .register-footer a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+    </style>
+}
+
+<div class="register-wrap">
+    <div class="premium-card register-card">
+        <div class="register-header">
+            <img src="~/img/BrandLogo.png" alt="DNA Softech" />
+            <h2>Create your account</h2>
+            <p>Use your details for faster checkout.</p>
+        </div>
+
+        <form id="registerForm">
+            <div id="registerError" class="auth-error"></div>
+
+            <div class="form-group">
+                <label for="fullName">Full Name *</label>
+                <input type="text" id="fullName" class="input-premium" placeholder="Your full name" required />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" class="input-premium" placeholder="name@example.com" required />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" class="input-premium" placeholder="Create a strong password" required />
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone (optional)</label>
+                <input type="tel" id="phone" class="input-premium" placeholder="+91 98765 43210" />
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address (optional)</label>
+                <input type="text" id="address" class="input-premium" placeholder="Street address" />
+            </div>
+
+            <div class="form-group">
+                <label for="city">City (optional)</label>
+                <input type="text" id="city" class="input-premium" placeholder="Mumbai" />
+            </div>
+
+            <div class="form-group">
+                <label for="state">State (optional)</label>
+                <input type="text" id="state" class="input-premium" placeholder="Maharashtra" />
+            </div>
+
+            <div class="form-group">
+                <label for="postalCode">Postal Code (optional)</label>
+                <input type="text" id="postalCode" class="input-premium" placeholder="400001" />
+            </div>
+
+            <div id="otpSection" class="otp-section">
+                <div class="otp-note">Verification code sent. Please check your email.</div>
+                <div class="form-group">
+                    <label for="otp">OTP *</label>
+                    <input type="text" id="otp" class="input-premium" placeholder="Enter 6-digit code" inputmode="numeric" maxlength="6" />
+                </div>
+                <button type="button" class="btn-premium" id="resendOtpBtn" style="width: 100%; margin-bottom: 10px;">
+                    Resend OTP
+                </button>
+            </div>
+
+            <button type="submit" class="btn-premium" id="registerBtn" style="width: 100%; margin-top: 10px;">
+                Send Verification Code
+            </button>
+        </form>
+
+        <div class="register-footer">
+            Already have an account? <a href="/Account/Login">Sign In</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let otpSent = false;
+        let pendingPayload = null;
+
+        const registerForm = document.getElementById('registerForm');
+        const registerBtn = document.getElementById('registerBtn');
+        const registerError = document.getElementById('registerError');
+        const otpSection = document.getElementById('otpSection');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+
+        function setError(message) {
+            registerError.textContent = message;
+            registerError.style.display = message ? 'block' : 'none';
+        }
+
+        async function sendOtp(email) {
+            const res = await fetch('/api/users/send-registration-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            if (!res.ok) {
+                let msg = 'Unable to send OTP';
+                try { const data = await res.json(); msg = data.error || msg; } catch { }
+                throw new Error(msg);
+            }
+        }
+
+        async function registerUser(payload, otp) {
+            const res = await fetch('/api/users/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...payload, otp })
+            });
+
+            if (!res.ok) {
+                let msg = 'Registration failed';
+                try { const txt = await res.clone().text(); msg = txt || msg; } catch { }
+                throw new Error(msg);
+            }
+
+            const user = await res.json();
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            setError('');
+
+            const payload = {
+                name: document.getElementById('fullName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                mobile: document.getElementById('phone').value.trim(),
+                addressLine1: document.getElementById('address').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                state: document.getElementById('state').value.trim(),
+                zip: document.getElementById('postalCode').value.trim()
+            };
+
+            if (!payload.name || !payload.email || !payload.password) {
+                setError('Name, email, and password are required.');
+                return;
+            }
+
+            registerBtn.disabled = true;
+
+            try {
+                if (!otpSent) {
+                    await sendOtp(payload.email);
+                    otpSent = true;
+                    pendingPayload = payload;
+                    otpSection.style.display = 'block';
+                    registerBtn.textContent = 'Create Account';
+                } else {
+                    const otp = document.getElementById('otp').value.trim();
+                    if (!otp) {
+                        setError('Please enter the OTP sent to your email.');
+                        return;
+                    }
+
+                    await registerUser(pendingPayload || payload, otp);
+                    window.location.href = '/Shop';
+                }
+            } catch (err) {
+                setError(err.message || 'Something went wrong. Please try again.');
+            } finally {
+                registerBtn.disabled = false;
+            }
+        });
+
+        resendOtpBtn.addEventListener('click', async () => {
+            setError('');
+            if (!pendingPayload?.email) {
+                setError('Please enter your email first.');
+                return;
+            }
+
+            resendOtpBtn.disabled = true;
+            try {
+                await sendOtp(pendingPayload.email);
+            } catch (err) {
+                setError(err.message || 'Unable to resend OTP.');
+            } finally {
+                resendOtpBtn.disabled = false;
+            }
+        });
+    </script>
+}

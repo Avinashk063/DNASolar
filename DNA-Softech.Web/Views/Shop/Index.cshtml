@@ -278,21 +278,21 @@
             }());
     </script>
 
-    <!-- ===== WISHLIST PANEL =====
+    <!-- ===== WISHLIST PANEL ===== -->
     <aside id="wishlistPanel" class="wishlist-panel side-panel">
-    <div class="cart-header">
-        <h3><i class="fas fa-heart"></i> My Wishlist</h3>
-        <button class="close-cart" id="closeWishlist"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="cart-body">
-        <div id="emptyWishlist" class="panel-empty-state">
-            <i class="far fa-heart"></i>
-            <p class="panel-empty-title">Your wishlist is empty</p>
-            <p class="panel-empty-sub">Save products you love to find them easily later</p>
+        <div class="cart-header">
+            <h3><i class="fas fa-heart"></i> My Wishlist</h3>
+            <button class="close-cart" id="closeWishlist"><i class="fas fa-times"></i></button>
         </div>
-        <ul id="wishlistItems" class="cart-items hidden"></ul>
-    </div>
-</aside>
+        <div class="cart-body">
+            <div id="emptyWishlist" class="panel-empty-state">
+                <i class="far fa-heart"></i>
+                <p class="panel-empty-title">Your wishlist is empty</p>
+                <p class="panel-empty-sub">Save products you love to find them easily later</p>
+            </div>
+            <ul id="wishlistItems" class="cart-items hidden"></ul>
+        </div>
+    </aside>
 
 <!-- ===== CART PANEL ===== -->
 <aside id="cartPanel" class="cart-panel side-panel">
@@ -323,129 +323,6 @@
         <button class="btn-continue-shopping" id="closeCartBtn">Continue Shopping</button>
     </div>
 </aside>
-
-<!-- ===== USER MODAL ===== -->
-<div id="userModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
-    <div class="modal-content modal-content--sm">
-        <div class="modal-header">
-            <h3 id="userModalTitle">My Account</h3>
-            <button class="modal-close" id="closeUserModal" aria-label="Close"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-            <div id="userProfile" class="hidden">
-                <!-- ── Profile view ── -->
-                <div id="profileViewSection">
-                    <div class="profile-hero">
-                        <div class="profile-avatar-lg" id="profileAvatar">U</div>
-                        <div>
-                            <h4 id="profileName" class="profile-name">User Name</h4>
-                            <p id="profileEmail" class="profile-email">user@email.com</p>
-                        </div>
-                    </div>
-                    <div class="profile-actions">
-                        <button id="editProfileBtn" class="btn-outline-primary"><i class="fas fa-edit"></i> Edit Profile</button>
-                        <button id="logoutBtn" class="btn-danger-outline"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                    </div>
-                </div>
-                <!-- ── Inline edit form ── -->
-                <div id="profileEditSection" class="hidden" style="margin-top:.5rem;">
-                    <p style="font-weight:700;font-size:.95rem;margin-bottom:.9rem;color:var(--dark-navy,#1e293b);">
-                        <i class="fas fa-user-edit" style="color:var(--primary-color);margin-right:.4rem;"></i>Edit Profile
-                    </p>
-                    <div id="editProfileError" style="display:none;background:#fee2e2;color:#b91c1c;padding:.55rem .75rem;border-radius:8px;font-size:.82rem;margin-bottom:.75rem;"></div>
-                    <div class="form-group" style="margin-bottom:.75rem;">
-                        <label style="font-size:.8rem;font-weight:600;color:#64748b;display:block;margin-bottom:.3rem;">Full Name *</label>
-                        <input type="text" id="editName" class="form-control" placeholder="Your full name" style="width:100%;" />
-                    </div>
-                    <div class="form-group" style="margin-bottom:.75rem;">
-                        <label style="font-size:.8rem;font-weight:600;color:#64748b;display:block;margin-bottom:.3rem;">Mobile</label>
-                        <input type="tel" id="editPhone" class="form-control" placeholder="+91 98765 43210" style="width:100%;" />
-                    </div>
-                    <div class="form-group" style="margin-bottom:.9rem;">
-                        <label style="font-size:.8rem;font-weight:600;color:#64748b;display:block;margin-bottom:.3rem;">Address</label>
-                        <input type="text" id="editAddress" class="form-control" placeholder="Street, City" style="width:100%;" />
-                    </div>
-                    <div style="display:flex;gap:.6rem;">
-                        <button id="saveProfileBtn" class="btn-primary" style="flex:1;">Save</button>
-                        <button id="cancelEditBtn" class="btn-outline-primary" style="flex:1;">Cancel</button>
-                    </div>
-                </div>
-            </div>
-            <div id="authForms">
-                <div class="auth-tabs">
-                    <button class="auth-tab active" id="showLogin">Sign In</button>
-                    <button class="auth-tab" id="showRegister">Create Account</button>
-                </div>
-                <form id="loginForm" class="auth-form">
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <div class="input-icon-wrap">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" name="email" placeholder="your@email.com" required />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <div class="input-icon-wrap">
-                            <i class="fas fa-lock input-icon"></i>
-                            <input type="password" name="password" placeholder="••••••••" required />
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary btn-block">Sign In <i class="fas fa-arrow-right"></i></button>
-                </form>
-                <form id="registerForm" class="auth-form hidden">
-                    <!-- Step 1: basic info -->
-                    <div id="regStep1">
-                        <div class="form-group">
-                            <label>Full Name</label>
-                            <div class="input-icon-wrap">
-                                <i class="fas fa-user input-icon"></i>
-                                <input type="text" name="name" placeholder="John Doe" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <div class="input-icon-wrap">
-                                <i class="fas fa-envelope input-icon"></i>
-                                <input type="email" name="email" placeholder="your@email.com" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Password</label>
-                            <div class="input-icon-wrap">
-                                <i class="fas fa-lock input-icon"></i>
-                                <input type="password" name="password" placeholder="Create a strong password" />
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Step 2: OTP (hidden until code is sent) -->
-                    <div id="otpSection" style="display:none">
-                        <div class="otp-info-box">
-                            <i class="fas fa-envelope-circle-check" style="color:#10b981;font-size:1.2rem;"></i>
-                            <span id="otpSentMsg" style="font-size:.85rem;color:#334155;">OTP sent — check your inbox</span>
-                        </div>
-                        <div class="form-group">
-                            <label>6-Digit OTP</label>
-                            <div class="input-icon-wrap">
-                                <i class="fas fa-shield-halved input-icon"></i>
-                                <input type="text" name="otp" id="otpInput" maxlength="6" placeholder="_ _ _ _ _ _"
-                                       inputmode="numeric" autocomplete="one-time-code"
-                                       style="letter-spacing:.35rem;font-size:1.1rem;font-weight:700;text-align:center;" />
-                            </div>
-                        </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;font-size:.78rem;">
-                            <span id="otpTimer" style="color:#64748b;"></span>
-                            <button type="button" id="resendOtpBtn" style="display:none;background:none;border:none;color:#4f46e5;font-weight:600;cursor:pointer;font-size:.78rem;">Resend OTP</button>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary btn-block" id="registerSubmitBtn">
-                        Send Verification Code <i class="fas fa-paper-plane"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- ===== PRODUCT MODAL ===== -->
 <div id="productModal" class="modal" role="dialog" aria-modal="true">
